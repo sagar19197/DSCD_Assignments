@@ -47,6 +47,7 @@ def JoinServer(CHANNEL):
 
 
 
+
 def LeaveServer():
 
 	global client_id;
@@ -59,8 +60,43 @@ def LeaveServer():
 
 
 
+
+def PublishArticle():
+	global client_id;
+	global CHANNEL;
+	print("PROCESSING YOUR REQUEST...\n");
+
+	res = False;
+	new_article = Server_pb2.Articles();
+	type_of_article = input("Enter TYPE of Article (SPORTS,FASHION,POLITICS):");
+	if(type_of_article == "SPORTS"):
+		new_article.type_of_article = Server_pb2.Category.SPORTS;
+	elif(type_of_article == "FASHION"):
+		new_article.type_of_article = Server_pb2.Category.FASHION;
+	elif(type_of_article == "POLITICS"):
+		new_article.type_of_article = Server_pb2.Category.POLITICS;
+	else:
+		res = True;
+
+	new_article.author_name = input("ENTER AUTHOR NAME:");
+	new_article.content = input("ENTER CONTENT [max 200 characters]:");
+
+	if(res == True):
+		print("FAILED, Illegal FORMAT");
+	else:	
+		CLIENT_STUB =  Server_pb2_grpc.PublishArticleServiceStub(CHANNEL);
+		clientID = Server_pb2.ClientId(client_id = client_id);
+		publishArticleRequest = Server_pb2.PublishArticleRequest(article = new_article, client_id = clientID);
+		publishArticleResponse = CLIENT_STUB.PublishArticle(publishArticleRequest);
+		print(publishArticleResponse.response);
+
+
+
+
 server_address = "Not connected";
 CHANNEL = grpc.insecure_channel("localhost:8000");
+
+
 
 while(True):
 	print("-------------------------------------");
@@ -112,6 +148,10 @@ while(True):
 
 		if (server_address =="Not connected"):
 			print("Please join to some server to do this operation.");
+		else:
+			#Publish Article - 
+			PublishArticle();
+
 	
 	elif option == "6":
 

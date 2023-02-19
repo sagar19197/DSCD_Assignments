@@ -12,6 +12,11 @@ import RegistryServer_pb2_grpc;
 import Server_pb2;
 import Server_pb2_grpc;
 
+# FOR DATETIME - 
+from datetime import datetime
+from google.protobuf.timestamp_pb2 import Timestamp
+
+
 print("\nWELCOME SERVER, PLEASE ENTER -");
 server_name = input("SERVER NAME: ");
 server_address = input("SERVER ADDRESS: ");
@@ -71,6 +76,38 @@ class LeaveServerServiceServicer(Server_pb2_grpc.LeaveServerServiceServicer):
 
 
 
+# PUBLISH ARTICLES - 
+class PublishArticleServiceServicer(Server_pb2_grpc.PublishArticleServiceServicer):
+	def PublishArticle(self, request, context):
+		global CLIENTELE;
+		global All_Articles;
+		#Checking for EXISTENCE in CLIENTELE
+		res = False;
+		for clients in CLIENTELE:
+			if(clients.client_id == request.client_id.client_id):
+				res = True;
+				break;
+		
+		if(res == False):
+			return Server_pb2.ServerResponse(response = "FAILED");
+		else:
+			if (request.article.author_name == "") or (request.article.content=="") or (len(request.article.content) > 200):
+				return Server_pb2.ServerResponse(response = "FAILED, Illegal Format");
+			else:
+				new_article = All_Articles.add();
+				new_article.type_of_article = request.article.type_of_article;
+				new_article.author_name = request.article.author_name;
+				new_article.content = request.article.content;
+				timestamp = Timestamp();
+				timestamp.FromDatetime(datetime.now());
+				new_article.time_of_publish.CopyFrom(timestamp);
+				server_msg = f"ARTICLE PUBLISHED FROM {request.client_id.client_id}";
+				print(server_msg);
+				return Server_pb2.ServerResponse(response = "SUCCESS");
+
+
+
+
 
 
 
@@ -78,6 +115,9 @@ class LeaveServerServiceServicer(Server_pb2_grpc.LeaveServerServiceServicer):
 MAXCLIENTS = 10;
 # CLIENTELE 
 CLIENTELE = Server_pb2.CLIENTELE().clients;
+# ALL ARTICLES LIST - 
+All_Articles = Server_pb2.All_Articles().articleList;
+
 
 if (registry_server_response.response == "SUCCESS"):
 	
@@ -87,6 +127,7 @@ if (registry_server_response.response == "SUCCESS"):
 	# Adding services -
 	Server_pb2_grpc.add_JoinServerServiceServicer_to_server(JoinServerServiceServicer(), server);
 	Server_pb2_grpc.add_LeaveServerServiceServicer_to_server(LeaveServerServiceServicer(), server);
+	Server_pb2_grpc.add_PublishArticleServiceServicer_to_server(PublishArticleServiceServicer(), server);
 
 	# Adding insecure port - 
 	server.add_insecure_port(server_address);
