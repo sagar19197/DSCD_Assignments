@@ -23,3 +23,11 @@ message ServerList {
 message ClientResponse {
 	ServerList serverList = 1;
 }
+
+service RegisterService {
+	rpc Register (ServerRequest) returns (ServerResponse);
+}
+
+service GetServerListService {
+	rpc GetServerList (ClientRequest) returns (ClientResponse);
+}
