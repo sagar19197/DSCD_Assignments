@@ -30,6 +30,14 @@ class JoinServerServiceServicer(Server_pb2_grpc.JoinServerServiceServicer):
 		global MAXCLIENTS;
 		global CLIENTELE;
 
+		# Checking condition for joining server - 
+		if (len(CLIENTELE) >= MAXCLIENTS):
+			return Server_pb2.ServerResponse(response = "FAILED");
+
+		for clients in CLIENTELE:
+			if(clients.client_id == request.client_id):
+				return Server_pb2.ServerResponse(response = "You have already joined this Server");
+				
 		server_msg = f"JOIN REQUEST FROM {request.client_id}";
 		print(server_msg);
 

@@ -72,10 +72,13 @@ while(True):
 	elif option == "2":
 
 		server_address = input("Enter Server Address to join that server:");
-		#iNSECURE CHANNEL
-		CHANNEL = grpc.insecure_channel(server_address);
-		#joIN SERVER
-		JoinServer(CHANNEL);
+		if server_address == "localhost:8000":
+			print("FAILED, Can not connect Registry SERVER");
+		else:
+			#iNSECURE CHANNEL
+			CHANNEL = grpc.insecure_channel(server_address);
+			#joIN SERVER
+			JoinServer(CHANNEL);
 
 	
 	elif option == "3":
