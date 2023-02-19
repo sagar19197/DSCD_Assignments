@@ -2,3 +2,24 @@
 syntax = "proto3";
 
 package RegistryServer;
+
+message ServerRequest {
+	string name = 1;
+	string address = 2;	
+}
+
+message ServerResponse {
+	string response = 1;
+}
+
+message ClientRequest {
+	string client_id = 1;
+}
+
+message ServerList {
+	repeated ServerRequest servers = 1;
+}
+
+message ClientResponse {
+	ServerList serverList = 1;
+}
