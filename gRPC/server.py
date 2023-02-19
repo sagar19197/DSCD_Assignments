@@ -107,6 +107,55 @@ class PublishArticleServiceServicer(Server_pb2_grpc.PublishArticleServiceService
 
 
 
+# Get ARTICLES - 
+class GetArticlesServiceServicer(Server_pb2_grpc.GetArticlesServiceServicer):
+	def GetArticles(self, request, context):
+		global CLIENTELE;
+		global All_Articles;
+		#Checking for EXISTENCE in CLIENTELE
+		res = False;
+		for clients in CLIENTELE:
+			if(clients.client_id == request.client_id.client_id):
+				res = True;
+				break;
+
+		type_of_article_list = ["<BLANK>","SPORTS","FASHION","POLITICS"]
+		date_of_request = datetime.fromtimestamp(request.time_of_publish.seconds);
+
+		Article_Response = Server_pb2.Article_Response();
+		Relevant_Articles = Article_Response.articles;
+
+		server_msg = f"ARTICLE REQUEST FROM {request.client_id.client_id} FOR {type_of_article_list[request.type_of_article]} , {request.author_name}, {date_of_request.strftime('%d/%m/%Y')}";
+		print(server_msg);
+		if(res == False):
+			return Article_Response;
+		else:
+			for articles in All_Articles:
+				date_of_article = datetime.fromtimestamp(articles.time_of_publish.seconds);
+				if(request.type_of_article==Server_pb2.Category.NO_TYPE):
+					if(request.author_name == articles.author_name and date_of_request <= date_of_article):
+						new_article = Relevant_Articles.add();
+						new_article.type_of_article = articles.type_of_article;
+						new_article.author_name = articles.author_name;
+						new_article.time_of_publish.CopyFrom(articles.time_of_publish);
+						new_article.content = articles.content;
+				elif (request.author_name == ""):
+					if(request.type_of_article == articles.type_of_article and date_of_request <= date_of_article):
+						new_article = Relevant_Articles.add();
+						new_article.type_of_article = articles.type_of_article;
+						new_article.author_name = articles.author_name;
+						new_article.time_of_publish.CopyFrom(articles.time_of_publish);
+						new_article.content = articles.content;
+				else: 
+					if(request.author_name == articles.author_name and request.type_of_article == articles.type_of_article and date_of_request <= date_of_article):
+						new_article = Relevant_Articles.add();
+						new_article.type_of_article = articles.type_of_article;
+						new_article.author_name = articles.author_name;
+						new_article.time_of_publish.CopyFrom(articles.time_of_publish);
+						new_article.content = articles.content;
+
+			return Article_Response;
+
 
 
 
@@ -128,6 +177,7 @@ if (registry_server_response.response == "SUCCESS"):
 	Server_pb2_grpc.add_JoinServerServiceServicer_to_server(JoinServerServiceServicer(), server);
 	Server_pb2_grpc.add_LeaveServerServiceServicer_to_server(LeaveServerServiceServicer(), server);
 	Server_pb2_grpc.add_PublishArticleServiceServicer_to_server(PublishArticleServiceServicer(), server);
+	Server_pb2_grpc.add_GetArticlesServiceServicer_to_server(GetArticlesServiceServicer(), server);
 
 	# Adding insecure port - 
 	server.add_insecure_port(server_address);

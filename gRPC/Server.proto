@@ -40,9 +40,10 @@ message Article_Response {
 }
 
 enum Category {
-		SPORTS = 0;
-		FASHION = 1;
-		POLITICS = 2;
+		NO_TYPE = 0;
+		SPORTS = 1;
+		FASHION = 2;
+		POLITICS = 3;
 }
 
 message Article_Request {

@@ -12,6 +12,8 @@ import Server_pb2;
 import Server_pb2_grpc;
 
 import uuid;
+from datetime import datetime
+from google.protobuf.timestamp_pb2 import Timestamp
 
 #Generating client id
 client_id = str(uuid.uuid1());
@@ -92,6 +94,57 @@ def PublishArticle():
 
 
 
+def GetArticles():
+	global client_id;
+	global CHANNEL;
+	print("PROCESSING YOUR REQUEST...\n");
+
+	res = False;
+	new_article = Server_pb2.Article_Request();
+	type_of_article = input("Enter TYPE of Article (SPORTS,FASHION,POLITICS):");
+	if(type_of_article == "SPORTS"):
+		new_article.type_of_article = Server_pb2.Category.SPORTS;
+	elif(type_of_article == "FASHION"):
+		new_article.type_of_article = Server_pb2.Category.FASHION;
+	elif(type_of_article == "POLITICS"):
+		new_article.type_of_article = Server_pb2.Category.POLITICS;
+	else:
+		res = True;
+
+	new_article.author_name = input("ENTER AUTHOR NAME:");	
+	timestamp = Timestamp();
+	date = input("ENTER DATE [DD/MM/YYY]:");
+
+	if((type_of_article == "" and new_article.author_name == "") or date == ""):
+		print("FAILED, ILLEGAL FORMAT !!");
+	elif(type_of_article!="" and res == True):
+		print("FAILED, ILLEGAL FORMAT !!");
+	else:
+		timestamp.FromDatetime(datetime.strptime(date, '%d/%m/%Y'));
+		new_article.time_of_publish.CopyFrom(timestamp);
+		clientID = Server_pb2.ClientId(client_id = client_id); 
+		new_article.client_id.CopyFrom(clientID);
+
+		CLIENT_STUB =  Server_pb2_grpc.GetArticlesServiceStub(CHANNEL);
+		getArticleResponse = CLIENT_STUB.GetArticles(new_article);
+		i = 1;
+		print("Following Information is matched from the data provided:\n");
+
+		type_of_article_list = ["<BLANK>","SPORTS","FASHION","POLITICS"]
+
+		for articles in getArticleResponse.articles:
+			date_of_article = datetime.fromtimestamp(articles.time_of_publish.seconds);
+			print(i,".)");
+			print("TYPE OF ARTICLE:",type_of_article_list[articles.type_of_article]);
+			print("AUTHOR:",articles.author_name);
+			print("DATE OF ARTICLE:",date_of_article.strftime('%d/%m/%Y'))
+			print("CONTENT:",articles.content);
+			i = i+1;
+
+
+
+
+
 
 server_address = "Not connected";
 CHANNEL = grpc.insecure_channel("localhost:8000");
@@ -143,6 +196,9 @@ while(True):
 
 		if (server_address =="Not connected"):
 			print("Please join to some server to do this operation.");
+		else:
+			#GetArticles
+			GetArticles();
 
 	elif option == "5":
 
