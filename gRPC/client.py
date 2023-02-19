@@ -20,8 +20,8 @@ print("\nWELCOME CLIENT USER, YOUR UUID:",client_id);
 
 
 def GetServerList():
-	global client_id;
 
+	global client_id;
 	print("Fetching List of active Servers from Registry SERVER...\n");
 	CHANNEL = grpc.insecure_channel("localhost:8000");
 	# ClientStub - 
@@ -39,12 +39,23 @@ def GetServerList():
 def JoinServer(CHANNEL):
 
 	global client_id;
-
 	print("PROCESSING YOUR REQUEST...\n");
 	CLIENT_STUB =  Server_pb2_grpc.JoinServerServiceStub(CHANNEL);
 	join_request = Server_pb2.ClientId(client_id = client_id);
 	join_response = CLIENT_STUB.JoinServer(join_request);
 	print(join_response.response);
+
+
+
+def LeaveServer():
+
+	global client_id;
+	global CHANNEL;
+	print("PROCESSING YOUR REQUEST...\n");
+	CLIENT_STUB =  Server_pb2_grpc.LeaveServerServiceStub(CHANNEL);
+	leave_request = Server_pb2.ClientId(client_id = client_id);
+	leave_response = CLIENT_STUB.LeaveServer(leave_request);
+	print(leave_response.response);
 
 
 
@@ -74,6 +85,7 @@ while(True):
 		server_address = input("Enter Server Address to join that server:");
 		if server_address == "localhost:8000":
 			print("FAILED, Can not connect Registry SERVER");
+			server_address = "Not connected";
 		else:
 			#iNSECURE CHANNEL
 			CHANNEL = grpc.insecure_channel(server_address);
@@ -85,6 +97,11 @@ while(True):
 
 		if (server_address =="Not connected"):
 			print("Please join to some server to do this operation.");
+		else:
+			#leave server
+			LeaveServer();
+			server_address = "Not connected";
+
 
 	elif option == "4":
 

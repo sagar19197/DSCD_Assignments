@@ -25,6 +25,8 @@ registry_server_response = server_stub.Register(registry_server_request);
 print(registry_server_response.response);
 
 
+
+# JOIN SERVER 
 class JoinServerServiceServicer(Server_pb2_grpc.JoinServerServiceServicer):
 	def JoinServer(self, request, context):
 		global MAXCLIENTS;
@@ -37,13 +39,39 @@ class JoinServerServiceServicer(Server_pb2_grpc.JoinServerServiceServicer):
 		for clients in CLIENTELE:
 			if(clients.client_id == request.client_id):
 				return Server_pb2.ServerResponse(response = "You have already joined this Server");
-				
+
 		server_msg = f"JOIN REQUEST FROM {request.client_id}";
 		print(server_msg);
 
 		new_client = CLIENTELE.add();
 		new_client.client_id = request.client_id;
 		return Server_pb2.ServerResponse(response = "SUCCESS");
+
+
+
+# LEAVE SERVER - 
+class LeaveServerServiceServicer(Server_pb2_grpc.LeaveServerServiceServicer):
+	def LeaveServer(self, request, context):
+		global CLIENTELE;
+		res = False;
+		i = 0;
+		for clients in CLIENTELE:
+			if(clients.client_id == request.client_id):
+				res = True;
+				break;
+			else:
+				i = i+1;
+		if (res):
+			del CLIENTELE[i];
+			server_msg = f"LEAVE REQUEST FROM {request.client_id}";
+			print(server_msg);
+			return Server_pb2.ServerResponse(response = "SUCCESS");
+		else:
+			return Server_pb2.ServerResponse(response = "FAILED");
+
+
+
+
 
 
 # Setting MAX_CLIENTS 
@@ -55,8 +83,11 @@ if (registry_server_response.response == "SUCCESS"):
 	
 	# Server info  -
 	server = grpc.server(futures.ThreadPoolExecutor(max_workers=10));
+	
 	# Adding services -
 	Server_pb2_grpc.add_JoinServerServiceServicer_to_server(JoinServerServiceServicer(), server);
+	Server_pb2_grpc.add_LeaveServerServiceServicer_to_server(LeaveServerServiceServicer(), server);
+
 	# Adding insecure port - 
 	server.add_insecure_port(server_address);
 	server.start();
