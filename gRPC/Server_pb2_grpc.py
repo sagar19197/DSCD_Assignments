@@ -199,7 +199,7 @@ class PublishArticleServiceStub(object):
         """
         self.PublishArticle = channel.unary_unary(
                 '/Server.PublishArticleService/PublishArticle',
-                request_serializer=Server__pb2.Articles.SerializeToString,
+                request_serializer=Server__pb2.PublishArticleRequest.SerializeToString,
                 response_deserializer=Server__pb2.ServerResponse.FromString,
                 )
 
@@ -218,7 +218,7 @@ def add_PublishArticleServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'PublishArticle': grpc.unary_unary_rpc_method_handler(
                     servicer.PublishArticle,
-                    request_deserializer=Server__pb2.Articles.FromString,
+                    request_deserializer=Server__pb2.PublishArticleRequest.FromString,
                     response_serializer=Server__pb2.ServerResponse.SerializeToString,
             ),
     }
@@ -243,7 +243,7 @@ class PublishArticleService(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/Server.PublishArticleService/PublishArticle',
-            Server__pb2.Articles.SerializeToString,
+            Server__pb2.PublishArticleRequest.SerializeToString,
             Server__pb2.ServerResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
