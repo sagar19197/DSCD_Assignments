@@ -1,0 +1,65 @@
+
+syntax = "proto3";
+
+package Server;
+
+message ClientId {
+	string client_id = 1;
+}
+
+message CLIENTELE {
+	repeated ClientId clients = 1;
+}
+
+message ServerResponse {
+	string response = 1;
+}
+
+service JoinServerService {
+	rpc JoinServer (ClientId) returns (ServerResponse);
+}
+
+
+service LeaveServerService {
+	rpc LeaveServer (ClientId) returns (ServerResponse);
+}
+
+
+import "google/protobuf/timestamp.proto";
+
+message Articles {
+
+	Category type_of_article = 1;
+	string author_name = 2;
+	google.protobuf.Timestamp time_of_publish = 3;
+	string content = 4;
+}
+
+message Article_Response {
+	repeated Articles articles = 1;
+}
+
+enum Category {
+		SPORTS = 0;
+		FASHION = 1;
+		POLITICS = 2;
+}
+
+message Article_Request {
+	Category type_of_article = 1;
+	string author_name = 2;
+	google.protobuf.Timestamp time_of_publish = 3;
+}
+
+message All_Articles {
+	repeated Articles articleList = 1;
+}
+
+
+service GetArticlesService {
+	rpc GetArticles(Article_Request) returns (Article_Response);
+}
+
+service PublishArticleService {
+	rpc PublishArticle (Articles) returns (ServerResponse);
+}
