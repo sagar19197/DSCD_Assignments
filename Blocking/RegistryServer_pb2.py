@@ -13,7 +13,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x14RegistryServer.proto\x12\x0eRegistryServer\".\n\rServerRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0f\n\x07\x61\x64\x64ress\x18\x02 \x01(\t\"/\n\x0eServerResponse\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0f\n\x07\x61\x64\x64ress\x18\x02 \x01(\t\"\"\n\rClientRequest\x12\x11\n\tclient_id\x18\x01 \x01(\t\"<\n\nServerList\x12.\n\x07servers\x18\x01 \x03(\x0b\x32\x1d.RegistryServer.ServerRequest\"@\n\x0e\x43lientResponse\x12.\n\nserverList\x18\x01 \x01(\x0b\x32\x1a.RegistryServer.ServerList\"#\n\x0fPrimaryResponse\x12\x10\n\x08response\x18\x01 \x01(\t2\\\n\x0fRegisterService\x12I\n\x08Register\x12\x1d.RegistryServer.ServerRequest\x1a\x1e.RegistryServer.ServerResponse2f\n\x14GetServerListService\x12N\n\rGetServerList\x12\x1d.RegistryServer.ClientRequest\x1a\x1e.RegistryServer.ClientResponse2s\n\x1aInformPrimaryServerService\x12U\n\x13InformPrimaryServer\x12\x1d.RegistryServer.ServerRequest\x1a\x1f.RegistryServer.PrimaryResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x14RegistryServer.proto\x12\x0eRegistryServer\" \n\rServerRequest\x12\x0f\n\x07\x61\x64\x64ress\x18\x02 \x01(\t\"!\n\x0eServerResponse\x12\x0f\n\x07\x61\x64\x64ress\x18\x02 \x01(\t\"\"\n\rClientRequest\x12\x11\n\tclient_id\x18\x01 \x01(\t\"<\n\nServerList\x12.\n\x07servers\x18\x01 \x03(\x0b\x32\x1d.RegistryServer.ServerRequest\"@\n\x0e\x43lientResponse\x12.\n\nserverList\x18\x01 \x01(\x0b\x32\x1a.RegistryServer.ServerList\"#\n\x0fPrimaryResponse\x12\x10\n\x08response\x18\x01 \x01(\t2\\\n\x0fRegisterService\x12I\n\x08Register\x12\x1d.RegistryServer.ServerRequest\x1a\x1e.RegistryServer.ServerResponse2f\n\x14GetServerListService\x12N\n\rGetServerList\x12\x1d.RegistryServer.ClientRequest\x1a\x1e.RegistryServer.ClientResponse2s\n\x1aInformPrimaryServerService\x12U\n\x13InformPrimaryServer\x12\x1d.RegistryServer.ServerRequest\x1a\x1f.RegistryServer.PrimaryResponseb\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'RegistryServer_pb2', globals())
@@ -21,21 +21,21 @@ if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
   _SERVERREQUEST._serialized_start=40
-  _SERVERREQUEST._serialized_end=86
-  _SERVERRESPONSE._serialized_start=88
-  _SERVERRESPONSE._serialized_end=135
-  _CLIENTREQUEST._serialized_start=137
-  _CLIENTREQUEST._serialized_end=171
-  _SERVERLIST._serialized_start=173
-  _SERVERLIST._serialized_end=233
-  _CLIENTRESPONSE._serialized_start=235
-  _CLIENTRESPONSE._serialized_end=299
-  _PRIMARYRESPONSE._serialized_start=301
-  _PRIMARYRESPONSE._serialized_end=336
-  _REGISTERSERVICE._serialized_start=338
-  _REGISTERSERVICE._serialized_end=430
-  _GETSERVERLISTSERVICE._serialized_start=432
-  _GETSERVERLISTSERVICE._serialized_end=534
-  _INFORMPRIMARYSERVERSERVICE._serialized_start=536
-  _INFORMPRIMARYSERVERSERVICE._serialized_end=651
+  _SERVERREQUEST._serialized_end=72
+  _SERVERRESPONSE._serialized_start=74
+  _SERVERRESPONSE._serialized_end=107
+  _CLIENTREQUEST._serialized_start=109
+  _CLIENTREQUEST._serialized_end=143
+  _SERVERLIST._serialized_start=145
+  _SERVERLIST._serialized_end=205
+  _CLIENTRESPONSE._serialized_start=207
+  _CLIENTRESPONSE._serialized_end=271
+  _PRIMARYRESPONSE._serialized_start=273
+  _PRIMARYRESPONSE._serialized_end=308
+  _REGISTERSERVICE._serialized_start=310
+  _REGISTERSERVICE._serialized_end=402
+  _GETSERVERLISTSERVICE._serialized_start=404
+  _GETSERVERLISTSERVICE._serialized_end=506
+  _INFORMPRIMARYSERVERSERVICE._serialized_start=508
+  _INFORMPRIMARYSERVERSERVICE._serialized_end=623
 # @@protoc_insertion_point(module_scope)
