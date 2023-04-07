@@ -10,6 +10,10 @@ import RegistryServer_pb2;
 import RegistryServer_pb2_grpc;
 
 
+# REGISTRY SERVER ADDRESS - 
+REGISTRY_SERVER_ADDRESS = "localhost:8000";
+
+
 # Extending class for server servicer - 
 class RegisterServiceServicer(RegistryServer_pb2_grpc.RegisterServiceServicer):
 	def Register(self, request, context):
@@ -17,15 +21,16 @@ class RegisterServiceServicer(RegistryServer_pb2_grpc.RegisterServiceServicer):
 		global MAXSERVERS;
 		global PRIMARY_SERVER;
 		global PRIMARY_CHANNEL;
+		global REGISTRY_SERVER_ADDRESS;
 
 		# Checking condition for joining server - 
 		if (len(ServerList.servers) >= MAXSERVERS):
-			return RegistryServer_pb2.ServerResponse(response = "FAILED");
-		if request.address == "localhost:8000":
-			return RegistryServer_pb2.ServerResponse(response = "FAILED, SERVER ADDRESS ALREADY TAKEN !!");
+			return RegistryServer_pb2.ServerResponse(address = "FAILED");
+		if request.address == REGISTRY_SERVER_ADDRESS:
+			return RegistryServer_pb2.ServerResponse(address = "FAILED, SERVER ADDRESS ALREADY TAKEN !!");
 		for server in ServerList.servers:
 			if server.address == request.address:
-				return RegistryServer_pb2.ServerResponse(response = "FAILED, SERVER ADDRESS ALREADY TAKEN !!");
+				return RegistryServer_pb2.ServerResponse(address = "FAILED, SERVER ADDRESS ALREADY TAKEN !!");
 
 		server_msg = f"JOIN REQUEST FROM {request.address}";
 		print(server_msg);
@@ -76,8 +81,8 @@ RegistryServer_pb2_grpc.add_GetServerListServiceServicer_to_server(GetServerList
 
 
 # adding insecure port - 
-registry_server.add_insecure_port("[::]:8000");
+registry_server.add_insecure_port(REGISTRY_SERVER_ADDRESS);
 registry_server.start();
 
-print("\nWELCOME REGISTRY SERVER !! Your address: localhost:8000");
+print("\nWELCOME REGISTRY SERVER !! Your address:",REGISTRY_SERVER_ADDRESS);
 registry_server.wait_for_termination();
