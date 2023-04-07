@@ -7,6 +7,10 @@ import grpc
 import RegistryServer_pb2;
 import RegistryServer_pb2_grpc;
 
+# Importing Server Proto - 
+import Server_pb2;
+import Server_pb2_grpc;
+
 import uuid;
 
 
@@ -33,17 +37,39 @@ for server in serverList:
 	print(server.address);
 
 
+
+
+def generateUID():
+	return str(uuid.uuid1());
+
+
+def Write(filename, content, uuid):
+	print("\nPROCESSING YOUR REQUEST \n");
+	global CHANNEL;
+	server_stub = Server_pb2_grpc.ClientWriteServiceStub(CHANNEL);
+	clientWriteRequest = Server_pb2.ClientWriteRequest(name = filename, content = content, uuid = uuid);
+	clientWriteResponse = server_stub.ClientWrite(clientWriteRequest);
+	print("STATUS : ", clientWriteResponse.status);
+	print("UUID : ",clientWriteResponse.uuid);
+	print("VERSION : ", clientWriteResponse.timestamp);
+
+
+
+
+
+
 server_address = "Not connected";
 
 while(True):
-	print("-------------------------------------");
+	print("-----------------------------------------");
 	print("Please Enter Number of one of the following options:");
 	print("1. Connect to Server");
 	print("2. Write a File");
 	print("3. Read a File");
 	print("4. Delete a File");
 	print("5. My Connection");
-	print("6. EXIT");
+	print("6. Generate UUID ");
+	print("7. EXIT")
 
 	option = input("\n Enter Option Number : ");
 	print("----------------------------------------\n")
@@ -64,7 +90,12 @@ while(True):
 		if (server_address =="Not connected"):
 			print("Please join to some server to do this operation.");
 		else:
-			print("Will implement this method");
+			# Write the file
+			filename = input("Enter File Name : ");
+			content = input("Enter Content : ");
+			uuid = input("Enter UUID : ");
+			Write(filename, content, uuid);
+
 
 	elif option == "3" :
 
@@ -85,7 +116,10 @@ while(True):
 		print("You are connected to : ",server_address);
 		print("\nUse Connect to Server for changing connections");
 
-	elif option == "6" :
+	elif option == "6":
+		print("UUID : ",generateUID());
+
+	elif option == "7" :
 
 		break;
 
