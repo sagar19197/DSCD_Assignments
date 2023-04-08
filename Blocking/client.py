@@ -141,12 +141,47 @@ def NormalMode():
 	# Deleting recently created file
 	Delete(file_uuid2);
 
-	print("\n-----Reading from all servers-----\n");
+	print("\n-----Reading DELETED file all servers-----\n");
 	# Reading DELETED FILE from all servers one by one
 	for server in serverList:
 		# Making connection
 		ConnectToServer(server.address);
 		Read(file_uuid2);
+
+	print("\n-----DELETING DELETED FILE-----\n");
+	# Deleting DELETED FILE from all servers one by one
+	for server in serverList:
+		# Making connection
+		ConnectToServer(server.address);
+		Delete(file_uuid2);
+
+	print("\n-----Writting with UUID of Deleted files-----\n");
+	Write(filename2, content2, file_uuid2)
+
+	print("\n-----Writting with NEW UUID But With Existing Filename-----\n");
+	Write(filename, content, generateUID());
+
+	print("\n-----Overwritng Existing FILE-----\n");
+	Write(filename, content2, file_uuid);
+
+	print("\n-----Reading from all servers-----\n");
+	# Reading DELETED FILE from all servers one by one
+	for server in serverList:
+		# Making connection
+		ConnectToServer(server.address);
+		Read(file_uuid);
+
+	print("\n-----Reading of UNKNOWN UUID-----\n");
+	# Reading DELETED FILE from all servers one by one
+	new_uuid = generateUID();
+	for server in serverList:
+		# Making connection
+		ConnectToServer(server.address);
+		Read(new_uuid);
+
+	
+
+
 
 
 
