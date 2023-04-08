@@ -49,9 +49,12 @@ def Write(filename, content, uuid):
 	server_stub = Server_pb2_grpc.ClientWriteServiceStub(CHANNEL);
 	clientWriteRequest = Server_pb2.ClientWriteRequest(name = filename, content = content, uuid = uuid);
 	clientWriteResponse = server_stub.ClientWrite(clientWriteRequest);
-	print("STATUS : ", clientWriteResponse.status);
-	print("UUID : ",clientWriteResponse.uuid);
-	print("VERSION : ", clientWriteResponse.timestamp);
+	if clientWriteResponse.status == "SUCCESS":
+		print("STATUS : ", clientWriteResponse.status);
+		print("UUID : ",clientWriteResponse.uuid);
+		print("VERSION : ", clientWriteResponse.timestamp);
+	else:
+		print("STATUS : ", clientWriteResponse.status);
 
 
 

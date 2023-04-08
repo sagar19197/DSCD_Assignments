@@ -54,35 +54,92 @@ class ClientWriteServiceServicer(object):
 		if PRIMARY_CHANNEL == "":
 			# Primary server
 			print("RECIEVED FILE WRITE REQUEST FROM CLIENT OF FILE UUID:", request.uuid);
-			new_file = FileList.files.add();
-			new_file.uuid = request.uuid;
-			new_file.filename = request.name;
 
-			curr_now = datetime.now();
-			new_file.timestamp = curr_now.strftime("%d/%m/%Y %H:%M:%S");
+			# Condition checks
 
+			file_with_uuid = None;
+			file_with_filename = None;
 
-			# Writting content : Making directory and saving files
-			filename =  server_dir +"\\"+ str(request.name)+".txt";
-			with open(filename, "w") as file:
-				file.write(request.content);
+			for files in FileList.files:
+				if (files.uuid == request.uuid):
+					file_with_uuid = files;
+					break;
 
+			for files in FileList.files:
+				if (files.filename == request.name):
+					file_with_filename = files;
+					break;
 
+			res_new_file = False;
+			res_update_file = False;
 
-			# Blocking CALL 
-
-			for servers in ServerList.servers:
-				channel = grpc.insecure_channel(servers.address);
-				server_stub = Server_pb2_grpc.PrimaryWriteServiceStub(channel);
-				clientWriteRequest = Server_pb2.ClientWriteRequest(name = new_file.filename, content = request.content, uuid = new_file.uuid);
-				primary_write_request = Server_pb2.PrimaryWriteRequest(clientWriteRequest = clientWriteRequest, timestamp = new_file.timestamp);
-				primary_write_response = server_stub.PrimaryWrite(primary_write_request);
-				if(primary_write_response.status != "SUCCESS"):
-					clientWriteResponse = Server_pb2.ClientWriteResponse(status = "FAILED");
+			if file_with_uuid == None:
+				# UUID DOES NOT EXIST 
+				if file_with_filename != None :
+					# UUID DOES NOT EXIST, BUT FILE with Given Name Exist
+					clientWriteResponse = Server_pb2.ClientWriteResponse(status = "FILE WITH SAME NAME ALREADY EXISTS", uuid = None , timestamp = None);
+					return clientWriteResponse;
+				else :
+					# UUID DOES NOT EXIST AND FILE NAME NOT EXIST
+					res_new_file = True;
+			else:
+				# UUID EXISTS
+				if file_with_filename == None:
+					# UUID EXISTS AND FILENAME DOES NOT EXISTS
+					clientWriteResponse = Server_pb2.ClientWriteResponse(status = "DELETED FILE CAN NOT BE UPDATED", uuid = None , timestamp = None);
 					return clientWriteResponse;
 
-			# IF all are SUCCESS -
-			clientWriteResponse = Server_pb2.ClientWriteResponse(status = "SUCCESS", uuid = new_file.uuid, timestamp = new_file.timestamp);
+				elif (file_with_filename != None) and (file_with_filename != file_with_uuid):
+					# UUID EXISTS, FILENAME EXISTS, But UUID DOES NOT MATCH WITH FILENAME
+					# User is trying to create 2 FILES For same UUID
+					clientWriteResponse = Server_pb2.ClientWriteResponse(status = "FILENAME DOES NOT MATCH WITH UUID", uuid = None , timestamp = None);
+					return clientWriteResponse; 
+				else:
+					# UUID EXISTS, FILENAME EXISTS AND MAPPING EXISTS
+					res_update_file = True;
+
+
+
+			if (res_update_file == True) or (res_new_file == True): 
+
+				if (res_update_file == False):
+					new_file = FileList.files.add();
+					new_file.uuid = request.uuid;
+					new_file.filename = request.name;
+
+					curr_now = datetime.now();
+					new_file.timestamp = curr_now.strftime("%d/%m/%Y %H:%M:%S");
+				else:
+					new_file = file_with_uuid;
+					curr_now = datetime.now();
+					new_file.timestamp = curr_now.strftime("%d/%m/%Y %H:%M:%S");
+
+
+				# Writting content : Making directory and saving files
+				filename =  server_dir +"\\"+ str(request.name)+".txt";
+				with open(filename, "w") as file:
+					file.write(request.content);
+
+
+
+				# Blocking CALL 
+
+				for servers in ServerList.servers:
+					channel = grpc.insecure_channel(servers.address);
+					server_stub = Server_pb2_grpc.PrimaryWriteServiceStub(channel);
+					clientWriteRequest = Server_pb2.ClientWriteRequest(name = new_file.filename, content = request.content, uuid = new_file.uuid);
+					primary_write_request = Server_pb2.PrimaryWriteRequest(clientWriteRequest = clientWriteRequest, timestamp = new_file.timestamp);
+					primary_write_response = server_stub.PrimaryWrite(primary_write_request);
+					if(primary_write_response.status != "SUCCESS"):
+						clientWriteResponse = Server_pb2.ClientWriteResponse(status = "FAILED");
+						return clientWriteResponse;
+
+				# IF all are SUCCESS -
+				clientWriteResponse = Server_pb2.ClientWriteResponse(status = "SUCCESS", uuid = new_file.uuid, timestamp = new_file.timestamp);
+				return clientWriteResponse;
+
+			# SOMETHING BAD HAPPENED
+			clientWriteResponse = Server_pb2.ClientWriteResponse(status = "SOMETHING BAD HAPPENED", uuid = None , timestamp = None);
 			return clientWriteResponse;
 
 		else:
@@ -102,6 +159,8 @@ class ClientReadServiceServicer(object):
 		global FileList;
 		global server_dir;
 
+		print("RECIEVED READ REQUEST FROM CLIENT FOR FILE UUID:",request.uuid);
+		# Conditions checking
 		file = None;
 		for files in FileList.files:
 			if files.uuid == request.uuid:
@@ -140,19 +199,73 @@ class ClientDeleteServiceServicer(object):
 class PrimaryWriteServiceServicer(object):
 	def PrimaryWrite(self, request, context):
 		global server_dir;
+		global FileList;
 
 		print("RECIEVED FILE WRITE REQUEST FROM PRIMARY OF FILE UUID:", request.clientWriteRequest.uuid);
-		new_file = FileList.files.add();
-		new_file.uuid = request.clientWriteRequest.uuid;
-		new_file.filename = request.clientWriteRequest.name;
-		new_file.timestamp = request.timestamp;
+		# Condition checks
+			
+		file_with_uuid = None;
+		file_with_filename = None;
+
+		for files in FileList.files:
+			if (files.uuid == request.clientWriteRequest.uuid):
+				file_with_uuid = files;
+				break;
+
+		for files in FileList.files:
+			if (files.filename == request.clientWriteRequest.name):
+				file_with_filename = files;
+				break;
+
+		res_new_file = False;
+		res_update_file = False;
+
+		if file_with_uuid == None:
+			# UUID DOES NOT EXIST 
+			if file_with_filename != None :
+				# UUID DOES NOT EXIST, BUT FILE with Given Name Exist
+				clientWriteResponse = Server_pb2.PrimaryWriteResponse(status = "FILE WITH SAME NAME ALREADY EXISTS");
+				return clientWriteResponse;
+			else :
+				# UUID DOES NOT EXIST AND FILE NAME NOT EXIST
+				res_new_file = True;
+		else:
+			# UUID EXISTS
+			if file_with_filename == None:
+				# UUID EXISTS AND FILENAME DOES NOT EXISTS
+				clientWriteResponse = Server_pb2.PrimaryWriteResponse(status = "DELETED FILE CAN NOT BE UPDATED");
+				return clientWriteResponse;
+
+			elif (file_with_filename != None) and (file_with_filename != file_with_uuid):
+				# UUID EXISTS, FILENAME EXISTS, But UUID DOES NOT MATCH WITH FILENAME
+				# User is trying to create 2 FILES For same UUID
+				clientWriteResponse = Server_pb2.PrimaryWriteResponse(status = "FILENAME DOES NOT MATCH WITH UUID");
+				return clientWriteResponse; 
+			else:
+				# UUID EXISTS, FILENAME EXISTS AND MAPPING EXISTS
+				res_update_file = True;
 
 
-		filename =  server_dir +"//"+ str(request.clientWriteRequest.name)+".txt";
-		with open(filename, "w") as file:
-			file.write(request.clientWriteRequest.content);
 
-		return Server_pb2.PrimaryWriteResponse(status = "SUCCESS");
+		if (res_update_file == True) or (res_new_file == True): 
+
+			if (res_update_file == False):
+				new_file = FileList.files.add();
+				new_file.uuid = request.clientWriteRequest.uuid;
+				new_file.filename = request.clientWriteRequest.name;
+				new_file.timestamp = request.timestamp;
+
+			else:
+				new_file = file_with_uuid;
+				new_file.timestamp = request.timestamp;
+
+			filename =  server_dir +"\\"+ str(request.clientWriteRequest.name)+".txt";
+			with open(filename, "w") as file:
+				file.write(request.clientWriteRequest.content);
+
+			return Server_pb2.PrimaryWriteResponse(status = "SUCCESS");
+
+		return Server_pb2.PrimaryWriteResponse(status = "FAILED");
 
 
 
