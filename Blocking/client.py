@@ -13,7 +13,9 @@ import Server_pb2_grpc;
 
 import uuid;
 
+import sys;
 
+#----------------------------------------------------
 # REGISTRY SERVER ADDRESS - 
 REGISTRY_SERVER_ADDRESS = "localhost:8000";
 
@@ -37,10 +39,21 @@ for server in serverList:
 	print(server.address);
 
 
-
+#---------------------------------------------------------
 
 def generateUID():
 	return str(uuid.uuid1());
+
+
+def ConnectToServer(server_address):
+	if server_address == REGISTRY_SERVER_ADDRESS:
+		print("FAILED, Can not connect Registry SERVER");
+		server_address = "Not connected";
+	else :
+		# Insecure Channel-
+		global CHANNEL;
+		CHANNEL = grpc.insecure_channel(server_address);
+		print("\nCONNECTION ESTABLISHED SUCCESSFULLY:",server_address);
 
 
 
@@ -86,78 +99,145 @@ def Delete(file_uuid):
 
 
 
-server_address = "Not connected";
+#-----------------------------------------------------
 
-while(True):
-	print("-----------------------------------------");
-	print("Please Enter Number of one of the following options:");
-	print("1. Connect to Server");
-	print("2. Write a File");
-	print("3. Read a File");
-	print("4. Delete a File");
-	print("5. My Connection");
-	print("6. Generate UUID ");
-	print("7. EXIT")
+# NORMAL MODE
+def NormalMode():
+	print("-----------------------------------");
+	global serverList;
+	# Making connection with last Server in the list
+	last_server = serverList[-1];
+	ConnectToServer(last_server.address);
+	# Performing Write Operation
+	print("\n-----Performing WRITE operation-----\n");
+	filename = "HelloWorld";
+	content = "HELLO WORLD FROM PYTHON. Welcome";
+	file_uuid = generateUID();
+	Write(filename, content, file_uuid);
 
-	option = input("\n Enter Option Number : ");
-	print("----------------------------------------\n")
+	print("\n-----Reading from all servers-----\n");
+	# Reading from all servers one by one
+	for server in serverList:
+		# Making connection
+		ConnectToServer(server.address);
+		Read(file_uuid);
 
-	# Case handling - 
-	if option == "1":
+	# AGAIN PEFORMING WRITE OPERATION
+	print("\n-----Performing WRITE operation-----\n");
+	filename2 = "HelloWorld2";
+	content2 = "THIS IS SECOND FILE. HELLO WORLD.";
+	file_uuid2 = generateUID();
+	Write(filename2, content2, file_uuid2);
 
-		server_address = input("Enter Server Address to Connect : ");
-		if server_address == REGISTRY_SERVER_ADDRESS:
-			print("FAILED, Can not connect Registry SERVER");
-			server_address = "Not connected";
-		else :
-			# Insecure Channel-
-			CHANNEL = grpc.insecure_channel(server_address);
+	print("\n-----Reading from all servers-----\n");
+	# Reading from all servers one by one
+	for server in serverList:
+		# Making connection
+		ConnectToServer(server.address);
+		Read(file_uuid2);
 
-	elif option == "2" :
 
-		if (server_address =="Not connected"):
-			print("Please join to some server to do this operation.");
+	print("\n-----Deleting Last created File-----\n");
+	# Deleting recently created file
+	Delete(file_uuid2);
+
+	print("\n-----Reading from all servers-----\n");
+	# Reading DELETED FILE from all servers one by one
+	for server in serverList:
+		# Making connection
+		ConnectToServer(server.address);
+		Read(file_uuid2);
+
+
+
+#----------------------------------------------
+
+
+# CUSTOM MODE
+def CustomMode():
+	server_address = "Not connected";
+
+	while(True):
+		print("-----------------------------------------");
+		print("Please Enter Number of one of the following options:");
+		print("1. Connect to Server");
+		print("2. Write a File");
+		print("3. Read a File");
+		print("4. Delete a File");
+		print("5. My Connection");
+		print("6. Generate UUID ");
+		print("7. EXIT")
+
+		option = input("\n Enter Option Number : ");
+		print("----------------------------------------\n")
+
+		# Case handling - 
+		if option == "1":
+
+			server_address = input("Enter Server Address to Connect : ");
+			ConnectToServer(server_address);
+
+		elif option == "2" :
+
+			if (server_address =="Not connected"):
+				print("Please join to some server to do this operation.");
+			else:
+				# Write the file
+				filename = input("Enter File Name : ");
+				content = input("Enter Content : ");
+				file_uuid = input("Enter UUID : ");
+				Write(filename, content, file_uuid);
+
+
+		elif option == "3" :
+
+			if (server_address =="Not connected"):
+				print("Please join to some server to do this operation.");
+			else:
+				# uuid -
+				file_uuid = input("Enter UUID : ");
+				Read(file_uuid);
+
+
+		elif option == "4" :
+
+			if (server_address =="Not connected"):
+				print("Please join to some server to do this operation.");
+			else:
+				# uuid -
+				file_uuid = input("Enter UUID : ");
+				Delete(file_uuid);
+
+
+		elif option == "5" :
+
+			print("You are connected to : ",server_address);
+			print("\nUse Connect to Server for changing connections");
+
+		elif option == "6":
+			print("UUID : ",generateUID());
+
+		elif option == "7" :
+
+			break;
+
 		else:
-			# Write the file
-			filename = input("Enter File Name : ");
-			content = input("Enter Content : ");
-			file_uuid = input("Enter UUID : ");
-			Write(filename, content, file_uuid);
+			print("Invalid Input!! Please Enter again.");
 
 
-	elif option == "3" :
-
-		if (server_address =="Not connected"):
-			print("Please join to some server to do this operation.");
-		else:
-			# uuid -
-			file_uuid = input("Enter UUID : ");
-			Read(file_uuid);
 
 
-	elif option == "4" :
 
-		if (server_address =="Not connected"):
-			print("Please join to some server to do this operation.");
-		else:
-			# uuid -
-			file_uuid = input("Enter UUID : ");
-			Delete(file_uuid);
+mode = "CUSTOM";
+
+if len(sys.argv) == 2:
+	mode = sys.argv[1];
 
 
-	elif option == "5" :
+if mode == "CUSTOM":
+	CustomMode();
+else:
+	NormalMode();
 
-		print("You are connected to : ",server_address);
-		print("\nUse Connect to Server for changing connections");
-
-	elif option == "6":
-		print("UUID : ",generateUID());
-
-	elif option == "7" :
-
-		break;
-
-	else:
-		print("Invalid Input!! Please Enter again.");
 
 

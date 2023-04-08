@@ -4,6 +4,16 @@
 import subprocess
 import time
 
+print("\nWELCOME TO PRIMARY BACKUP BLOCKING PROTOCOL :\n");
+print("PLEASE SELECT MODE:");
+print("1. NORMAL MODE: This mode contains testcases as per the documents.");
+print("2. CUSTOM MODE: In this mode Client will have to enter Inputs. ")
+
+mode = int(input("\n Enter MODE option number: "));
+
+if mode != 1 and mode !=2:
+    print("PLEASE ENTER VALID INPUT !! ABORTING");
+    exit();
 
 # for N replicas
 N = int(input("\nEnter Number of Replicas/Servers : "));
@@ -32,7 +42,10 @@ M = int(input("\nEnter Number of Clients to generate : "));
 
 commands = [];
 for i in range(M):
-    commands.append('python client.py');
+    if mode == 1:
+        commands.append('python client.py NORMAL');
+    else:
+        commands.append('python client.py');
     time.sleep(0.1);
 
 # Open a new command prompt window for each Client
