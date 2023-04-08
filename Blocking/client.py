@@ -43,6 +43,7 @@ def generateUID():
 	return str(uuid.uuid1());
 
 
+
 def Write(filename, content, uuid):
 	print("\nPROCESSING YOUR REQUEST \n");
 	global CHANNEL;
@@ -55,6 +56,7 @@ def Write(filename, content, uuid):
 		print("VERSION : ", clientWriteResponse.timestamp);
 	else:
 		print("STATUS : ", clientWriteResponse.status);
+
 
 
 
@@ -72,6 +74,14 @@ def Read(file_uuid):
 	else:
 		print("STATUS : ",clientReadResponse.status);
 
+
+
+def Delete(file_uuid):
+	print("\n PROCESSING YOUR REQUEST \n");
+	server_stub = Server_pb2_grpc.ClientDeleteServiceStub(CHANNEL);
+	clientDeleteRequest = Server_pb2.ClientDeleteRequest(uuid = file_uuid);
+	clientDeleteResponse = server_stub.ClientDelete(clientDeleteRequest);
+	print("STATUS : ", clientDeleteResponse.status);
 
 
 
@@ -130,7 +140,10 @@ while(True):
 		if (server_address =="Not connected"):
 			print("Please join to some server to do this operation.");
 		else:
-			print("Will implement this method");
+			# uuid -
+			file_uuid = input("Enter UUID : ");
+			Delete(file_uuid);
+
 
 	elif option == "5" :
 

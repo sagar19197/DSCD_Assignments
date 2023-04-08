@@ -33,7 +33,6 @@ class InformPrimaryServerServiceServicer(RegistryServer_pb2_grpc.InformPrimarySe
 
 		server_msg = f"JOIN REQUEST FROM {request.address}";
 		print(server_msg);
-
 		# Adding servers - 
 		new_server = ServerList.servers.add();
 		new_server.address = request.address;
@@ -98,8 +97,6 @@ class ClientWriteServiceServicer(object):
 					# UUID EXISTS, FILENAME EXISTS AND MAPPING EXISTS
 					res_update_file = True;
 
-
-
 			if (res_update_file == True) or (res_new_file == True): 
 
 				if (res_update_file == False):
@@ -119,8 +116,6 @@ class ClientWriteServiceServicer(object):
 				filename =  server_dir +"\\"+ str(request.name)+".txt";
 				with open(filename, "w") as file:
 					file.write(request.content);
-
-
 
 				# Blocking CALL 
 
@@ -148,6 +143,7 @@ class ClientWriteServiceServicer(object):
 			primary_stub = Server_pb2_grpc.ClientWriteServiceStub(PRIMARY_CHANNEL);
 			clientWriteRequest = Server_pb2.ClientWriteRequest(name = request.name, content = request.content, uuid = request.uuid);
 			return primary_stub.ClientWrite(clientWriteRequest);
+
 
 
 
@@ -188,12 +184,78 @@ class ClientReadServiceServicer(object):
 
 
 
-"""
+
+
+
+# SERVICE FOR DELETING FILE FROM SERVER
 class ClientDeleteServiceServicer(object):
 	def ClientDelete(self, request, context):
+		global PRIMARY_CHANNEL;
+		global FileList ;
+		global ServerList;
+		global server_dir;
+
+		if PRIMARY_CHANNEL == "":
+			# Primary server
+			print("RECIEVED DELETE REQUEST FROM CLIENT OF FILE UUID:", request.uuid);
+
+			# Condition checks
+
+			file_with_uuid = None;
+
+			for files in FileList.files:
+				if (files.uuid == request.uuid):
+					file_with_uuid = files;
+					break;
+
+			if file_with_uuid == None :
+				# UUID DOES NOT EXIST
+				clientDeleteResponse = Server_pb2.ClientDeleteResponse(status = "FILE DOES NOT EXIST");
+				return clientDeleteResponse;
+			else:
+				# UUID EXISTS
+				file_path = server_dir + "\\" + file_with_uuid.filename+".txt";
+
+				if not os.path.exists(file_path):
+					# UUID EXISTS BUT File does not exist
+					clientDeleteResponse = Server_pb2.ClientDeleteResponse(status = "FILE ALREADY DELETED");
+					return clientDeleteResponse;
+				else:
+					# UUID EXISTS AND FILE ALSO EXISTS
+
+					# Deleting from local storage -
+					os.remove(file_path);
+					# Deleting from in-memory and updating timestamp-
+					file_with_uuid.filename = "";
+					curr_now = datetime.now();
+					file_with_uuid.timestamp = curr_now.strftime("%d/%m/%Y %H:%M:%S");
 
 
-"""
+				# Blocking CALL 
+
+				for servers in ServerList.servers:
+					channel = grpc.insecure_channel(servers.address);
+					server_stub = Server_pb2_grpc.PrimaryDeleteServiceStub(channel);
+					clientDeleteRequest = Server_pb2.ClientDeleteRequest(uuid = request.uuid);
+					primary_Delete_response = server_stub.PrimaryDelete(clientDeleteRequest);
+					if(primary_Delete_response.status != "SUCCESS"):
+						clientDeleteResponse = Server_pb2.ClientDeleteResponse(status = "FAILED");
+						return clientDeleteResponse;
+
+				# IF all are SUCCESS -
+				clientDeleteResponse = Server_pb2.ClientDeleteResponse(status = "SUCCESS");
+				return clientDeleteResponse;
+		else:
+			# Sending to Primary
+			print("RECIEVED DELETE REQUEST FROM CLIENT OF FILE UUID:", request.uuid);
+			primary_stub = Server_pb2_grpc.ClientDeleteServiceStub(PRIMARY_CHANNEL);
+			clientDeleteRequest = Server_pb2.ClientDeleteRequest(uuid = request.uuid);
+			return primary_stub.ClientDelete(clientDeleteRequest);
+
+
+
+
+
 
 # Service which invokes when PRIMARY SENDS Write Request to REPLICAS
 class PrimaryWriteServiceServicer(object):
@@ -269,10 +331,52 @@ class PrimaryWriteServiceServicer(object):
 
 
 
-"""
+
+
+
+# SERVICE WILL BE INVOKED WHEN PRIMARY SEND REQUEST TO REPLICAS
 class PrimaryDeleteServiceServicer(object):
 	def PrimaryDelete(self, request, context):
-"""
+		print("RECIEVED DELETE REQUEST FROM PRIMARY OF FILE UUID:", request.uuid);
+
+		# Condition checks
+
+		file_with_uuid = None;
+
+		for files in FileList.files:
+			if (files.uuid == request.uuid):
+				file_with_uuid = files;
+				break;
+
+		if file_with_uuid == None :
+			# UUID DOES NOT EXIST
+			clientDeleteResponse = Server_pb2.PrimaryWriteResponse(status = "FILE DOES NOT EXIST");
+			return clientDeleteResponse;
+		else:
+			# UUID EXISTS
+			file_path = server_dir + "\\" + file_with_uuid.filename+".txt";
+
+			if not os.path.exists(file_path):
+				# UUID EXISTS BUT File does not exist
+				clientDeleteResponse = Server_pb2.PrimaryWriteResponse(status = "FILE ALREADY DELETED");
+				return clientDeleteResponse;
+			else:
+				# UUID EXISTS AND FILE ALSO EXISTS
+
+				# Deleting from local storage -
+				os.remove(file_path);
+				# Deleting from in-memory and updating timestamp-
+				file_with_uuid.filename = "";
+				curr_now = datetime.now();
+				file_with_uuid.timestamp = curr_now.strftime("%d/%m/%Y %H:%M:%S");
+
+				return Server_pb2.PrimaryWriteResponse(status = "SUCCESS");
+
+
+
+
+
+
 
 
 # Setting MAXSERVERS
@@ -334,7 +438,9 @@ Server_pb2_grpc.add_ClientWriteServiceServicer_to_server(ClientWriteServiceServi
 Server_pb2_grpc.add_PrimaryWriteServiceServicer_to_server(PrimaryWriteServiceServicer(), server);
 # Adding Read Services -
 Server_pb2_grpc.add_ClientReadServiceServicer_to_server(ClientReadServiceServicer(), server);
-
+# Adding Delete Services -
+Server_pb2_grpc.add_ClientDeleteServiceServicer_to_server(ClientDeleteServiceServicer(), server);
+Server_pb2_grpc.add_PrimaryDeleteServiceServicer_to_server(PrimaryDeleteServiceServicer(), server);
 
 # adding insecure port - 
 server.add_insecure_port(server_address);
