@@ -63,7 +63,7 @@ class ClientWriteServiceServicer(object):
 
 
 			# Writting content : Making directory and saving files
-			filename =  server_dir +"//"+ str(request.name)+".txt";
+			filename =  server_dir +"\\"+ str(request.name)+".txt";
 			with open(filename, "w") as file:
 				file.write(request.content);
 
@@ -95,19 +95,48 @@ class ClientWriteServiceServicer(object):
 
 
 
-"""
 
+# SERVICE FOR READING FILES FROM REPLICA
 class ClientReadServiceServicer(object):
 	def ClientRead(self, request, context):
+		global FileList;
+		global server_dir;
+
+		file = None;
+		for files in FileList.files:
+			if files.uuid == request.uuid:
+				file = files;
+				break;
+
+		if file == None:
+			# UUID Does not exist
+			clientReadResponse = Server_pb2.ClientReadResponse(status = "FILE DOES NOT EXIST", name= None, content = None, timestamp = None);
+			return clientReadResponse;
+		else :
+			# UUID EXISTS
+			file_path = server_dir + "\\" + file.filename+".txt";
+			if not os.path.exists(file_path):
+				# UUID EXISTS BUT File does not exist
+				clientReadResponse = Server_pb2.ClientReadResponse(status = "FILE ALREADY DELETED", name= None, content = None, timestamp = None);
+				return clientReadResponse;
+			else:
+				# UUID EXISTS AND FILE ALSO EXISTS
+				content = "";
+				with open(file_path, "r") as f:
+					content = f.read(); 
+				clientReadResponse = Server_pb2.ClientReadResponse(status = "SUCCESS", name= file.filename, content = content, timestamp = file.timestamp);
+				return clientReadResponse;
 
 
 
+"""
 class ClientDeleteServiceServicer(object):
 	def ClientDelete(self, request, context):
 
 
 """
 
+# Service which invokes when PRIMARY SENDS Write Request to REPLICAS
 class PrimaryWriteServiceServicer(object):
 	def PrimaryWrite(self, request, context):
 		global server_dir;
@@ -190,6 +219,9 @@ RegistryServer_pb2_grpc.add_InformPrimaryServerServiceServicer_to_server(InformP
 # Adding Write Services - 
 Server_pb2_grpc.add_ClientWriteServiceServicer_to_server(ClientWriteServiceServicer(), server);
 Server_pb2_grpc.add_PrimaryWriteServiceServicer_to_server(PrimaryWriteServiceServicer(), server);
+# Adding Read Services -
+Server_pb2_grpc.add_ClientReadServiceServicer_to_server(ClientReadServiceServicer(), server);
+
 
 # adding insecure port - 
 server.add_insecure_port(server_address);

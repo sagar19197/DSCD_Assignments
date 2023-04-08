@@ -55,6 +55,21 @@ def Write(filename, content, uuid):
 
 
 
+def Read(file_uuid):
+	print("\n PROCESSING YOUR REQUEST \n");
+	global CHANNEL;
+	server_stub = Server_pb2_grpc.ClientReadServiceStub(CHANNEL);
+	clientReadRequest = Server_pb2.ClientReadRequest(uuid = file_uuid);
+	clientReadResponse = server_stub.ClientRead(clientReadRequest);
+	if(clientReadResponse.status == "SUCCESS"):
+		print("STATUS : ",clientReadResponse.status);
+		print("NAME : ", clientReadResponse.name);
+		print("CONTENT :", clientReadResponse.content);
+		print("VERSION : ", clientReadResponse.timestamp);
+	else:
+		print("STATUS : ",clientReadResponse.status);
+
+
 
 
 
@@ -93,8 +108,8 @@ while(True):
 			# Write the file
 			filename = input("Enter File Name : ");
 			content = input("Enter Content : ");
-			uuid = input("Enter UUID : ");
-			Write(filename, content, uuid);
+			file_uuid = input("Enter UUID : ");
+			Write(filename, content, file_uuid);
 
 
 	elif option == "3" :
@@ -102,7 +117,10 @@ while(True):
 		if (server_address =="Not connected"):
 			print("Please join to some server to do this operation.");
 		else:
-			print("Will implement this method");
+			# uuid -
+			file_uuid = input("Enter UUID : ");
+			Read(file_uuid);
+
 
 	elif option == "4" :
 
