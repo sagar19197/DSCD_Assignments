@@ -4,7 +4,7 @@
 import subprocess
 import time
 
-print("\nWELCOME TO PRIMARY BACKUP BLOCKING PROTOCOL :\n");
+print("\nWELCOME TO PRIMARY BACKUP NON - BLOCKING PROTOCOL :\n");
 print("PLEASE SELECT MODE:");
 print("1. NORMAL MODE: This mode contains testcases as per the documents.");
 print("2. CUSTOM MODE: In this mode Client will have to enter Inputs. ")
