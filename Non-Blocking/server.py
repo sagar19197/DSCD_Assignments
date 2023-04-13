@@ -19,6 +19,9 @@ from datetime import datetime
 # For storing information - 
 import os;
 
+# Threading For Non BLOCKING
+import threading;
+
 # REGISTRY SERVER ADDRESS - 
 REGISTRY_SERVER_ADDRESS = "localhost:8000";
 
@@ -117,19 +120,14 @@ class ClientWriteServiceServicer(object):
 				with open(filename, "w") as file:
 					file.write(request.content);
 
-				# Blocking CALL 
 
-				for servers in ServerList.servers:
-					channel = grpc.insecure_channel(servers.address);
-					server_stub = Server_pb2_grpc.PrimaryWriteServiceStub(channel);
-					clientWriteRequest = Server_pb2.ClientWriteRequest(name = new_file.filename, content = request.content, uuid = new_file.uuid);
-					primary_write_request = Server_pb2.PrimaryWriteRequest(clientWriteRequest = clientWriteRequest, timestamp = new_file.timestamp);
-					primary_write_response = server_stub.PrimaryWrite(primary_write_request);
-					if(primary_write_response.status != "SUCCESS"):
-						clientWriteResponse = Server_pb2.ClientWriteResponse(status = "FAILED");
-						return clientWriteResponse;
+				# Creating Threads for sending Write Request to other Replicas
+				Write_Replica_thread = threading.Thread(target = SendWriteRequest, args = (ServerList, request, new_file));
+				# Starting thread in background
+				Write_Replica_thread.start();
 
-				# IF all are SUCCESS -
+
+				# This will be returned by main thread
 				clientWriteResponse = Server_pb2.ClientWriteResponse(status = "SUCCESS", uuid = new_file.uuid, timestamp = new_file.timestamp);
 				return clientWriteResponse;
 
@@ -143,6 +141,28 @@ class ClientWriteServiceServicer(object):
 			primary_stub = Server_pb2_grpc.ClientWriteServiceStub(PRIMARY_CHANNEL);
 			clientWriteRequest = Server_pb2.ClientWriteRequest(name = request.name, content = request.content, uuid = request.uuid);
 			return primary_stub.ClientWrite(clientWriteRequest);
+
+	
+
+
+# This will be invoked by backgound thread for writing-
+def SendWriteRequest(ServerList, request, new_file):
+
+	# Blocking CALL 
+
+	for servers in ServerList.servers:
+		channel = grpc.insecure_channel(servers.address);
+		server_stub = Server_pb2_grpc.PrimaryWriteServiceStub(channel);
+		clientWriteRequest = Server_pb2.ClientWriteRequest(name = new_file.filename, content = request.content, uuid = new_file.uuid);
+		primary_write_request = Server_pb2.PrimaryWriteRequest(clientWriteRequest = clientWriteRequest, timestamp = new_file.timestamp);
+		primary_write_response = server_stub.PrimaryWrite(primary_write_request);
+		if(primary_write_response.status != "SUCCESS"):
+			print("FAILED: Write failed for UUID:",new_file.uuid," AT:",servers.address);
+
+	# IF all are SUCCESS -
+	print("SUCCESS: Write for UUID:",new_file.uuid, " IS SUCCESSFULLY COMPLETED ACROSS ALL REPLICAS");
+
+
 
 
 
@@ -231,18 +251,15 @@ class ClientDeleteServiceServicer(object):
 					file_with_uuid.timestamp = curr_now.strftime("%d/%m/%Y %H:%M:%S");
 
 
-				# Blocking CALL 
 
-				for servers in ServerList.servers:
-					channel = grpc.insecure_channel(servers.address);
-					server_stub = Server_pb2_grpc.PrimaryDeleteServiceStub(channel);
-					clientDeleteRequest = Server_pb2.ClientDeleteRequest(uuid = request.uuid);
-					primary_Delete_response = server_stub.PrimaryDelete(clientDeleteRequest);
-					if(primary_Delete_response.status != "SUCCESS"):
-						clientDeleteResponse = Server_pb2.ClientDeleteResponse(status = "FAILED");
-						return clientDeleteResponse;
 
-				# IF all are SUCCESS -
+				# Creating Threads for sending Write Request to other Replicas
+				Delete_Replica_thread = threading.Thread(target = SendDeleteRequest, args = (ServerList, request));
+				# Starting thread in background
+				Delete_Replica_thread.start();
+
+
+				# This is returned by Main Thread -
 				clientDeleteResponse = Server_pb2.ClientDeleteResponse(status = "SUCCESS");
 				return clientDeleteResponse;
 		else:
@@ -251,6 +268,26 @@ class ClientDeleteServiceServicer(object):
 			primary_stub = Server_pb2_grpc.ClientDeleteServiceStub(PRIMARY_CHANNEL);
 			clientDeleteRequest = Server_pb2.ClientDeleteRequest(uuid = request.uuid);
 			return primary_stub.ClientDelete(clientDeleteRequest);
+
+
+
+
+# This will be invoked by backgound thread For Delete-
+def SendDeleteRequest(ServerList, request):
+
+	# Blocking CALL 
+
+	for servers in ServerList.servers:
+		channel = grpc.insecure_channel(servers.address);
+		server_stub = Server_pb2_grpc.PrimaryDeleteServiceStub(channel);
+		clientDeleteRequest = Server_pb2.ClientDeleteRequest(uuid = request.uuid);
+		primary_Delete_response = server_stub.PrimaryDelete(clientDeleteRequest);
+		if(primary_Delete_response.status != "SUCCESS"):
+			print("FAILED: DELETE failed for UUID:",new_file.uuid," AT:",servers.address);
+
+	# IF all are SUCCESS -
+	print("SUCCESS: DELETE for UUID:",request.uuid, "IS SUCCESSFULLY COMPLETED ACROSS ALL REPLICAS");
+
 
 
 
