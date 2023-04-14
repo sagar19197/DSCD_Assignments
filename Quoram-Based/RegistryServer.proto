@@ -1,0 +1,40 @@
+
+syntax = "proto3";
+
+package RegistryServer;
+
+
+
+message ServerRequest {
+	string address = 2;	
+}
+
+message ServerResponse {
+	string status = 2;
+}
+
+
+
+message ClientRequest {
+	string client_id = 1;
+	string requestType = 2;
+}
+
+message ServerList {
+	repeated ServerRequest servers = 1;
+}
+
+message ClientResponse {
+	ServerList serverList = 1;
+}
+
+
+
+service RegisterService {
+	rpc Register (ServerRequest) returns (ServerResponse);
+}
+
+service GetServerListService {
+	rpc GetServerList (ClientRequest) returns (ClientResponse);
+}
+
