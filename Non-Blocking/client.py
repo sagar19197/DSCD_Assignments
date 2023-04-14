@@ -79,13 +79,10 @@ def Read(file_uuid):
 	server_stub = Server_pb2_grpc.ClientReadServiceStub(CHANNEL);
 	clientReadRequest = Server_pb2.ClientReadRequest(uuid = file_uuid);
 	clientReadResponse = server_stub.ClientRead(clientReadRequest);
-	if(clientReadResponse.status == "SUCCESS"):
-		print("STATUS : ",clientReadResponse.status);
-		print("NAME : ", clientReadResponse.name);
-		print("CONTENT :", clientReadResponse.content);
-		print("VERSION : ", clientReadResponse.timestamp);
-	else:
-		print("STATUS : ",clientReadResponse.status);
+	print("STATUS : ",clientReadResponse.status);
+	print("NAME : ", clientReadResponse.name);
+	print("CONTENT :", clientReadResponse.content);
+	print("VERSION : ", clientReadResponse.timestamp);
 
 
 

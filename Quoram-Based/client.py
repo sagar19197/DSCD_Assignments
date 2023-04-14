@@ -111,7 +111,7 @@ def Read(file_uuid):
 		clientReadResponse = server_stub.ClientRead(clientReadRequest);
 
 		# Comparing TimeStamps and printing latest values
-		if(clientReadResponse.status == "SUCCESS"):
+		if(clientReadResponse.status == "SUCCESS" or clientReadResponse.status == "FILE ALREADY DELETED"):
 			if(latest_response == None):
 				latest_response = clientReadResponse;
 			else:
@@ -125,7 +125,7 @@ def Read(file_uuid):
 
 	# Printing the latest response - 
 	if latest_response == None:
-		print("\nSTATUS : Can Not get Required Information from the above replicas.");
+		print("\nSTATUS : FILE DOES NOT EXIST ON REPLICAS");
 	else:
 		print("\nSTATUS : ",latest_response.status);
 		print("NAME : ", latest_response.name);
@@ -135,10 +135,27 @@ def Read(file_uuid):
 
 
 
+
+def Delete(file_uuid):
+	print("\n PROCESSING YOUR REQUEST \n");
+
+	# Contacting Registry Servers for Fetching list of N_w Servers
+	new_serverList = getServerList_operation("delete");
+
+	for server in new_serverList:
+		# Generating channel
+		channel = grpc.insecure_channel(server.address);
+		server_stub = Server_pb2_grpc.ClientDeleteServiceStub(channel);
+		clientDeleteRequest = Server_pb2.ClientDeleteRequest(uuid = file_uuid);
+		clientDeleteResponse = server_stub.ClientDelete(clientDeleteRequest);
+		print("\nResponse from:",server.address);
+		print("STATUS : ", clientDeleteResponse.status);
+
+
+
+
 #-----------------------------------------------------------
 
-
-server_address = "Not connected";
 
 while(True):
 	print("-----------------------------------------");
@@ -175,7 +192,7 @@ while(True):
 	elif option == "4" :
 		
 		file_uuid = input("Enter UUID : ");
-		#Delete(file_uuid);
+		Delete(file_uuid);
 
 
 	elif option == "5" :

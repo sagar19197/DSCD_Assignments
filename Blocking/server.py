@@ -172,7 +172,7 @@ class ClientReadServiceServicer(object):
 			file_path = server_dir + "\\" + file.filename+".txt";
 			if not os.path.exists(file_path):
 				# UUID EXISTS BUT File does not exist
-				clientReadResponse = Server_pb2.ClientReadResponse(status = "FILE ALREADY DELETED", name= None, content = None, timestamp = None);
+				clientReadResponse = Server_pb2.ClientReadResponse(status = "FILE ALREADY DELETED", name= None, content = None, timestamp = file.timestamp);
 				return clientReadResponse;
 			else:
 				# UUID EXISTS AND FILE ALSO EXISTS

@@ -132,7 +132,7 @@ class ClientReadServiceServicer(object):
 			file_path = server_dir + "\\" + file.filename+".txt";
 			if not os.path.exists(file_path):
 				# UUID EXISTS BUT File does not exist
-				clientReadResponse = Server_pb2.ClientReadResponse(status = "FILE ALREADY DELETED", name= None, content = None, timestamp = None);
+				clientReadResponse = Server_pb2.ClientReadResponse(status = "FILE ALREADY DELETED", name= None, content = None, timestamp = file.timestamp);
 				return clientReadResponse;
 			else:
 				# UUID EXISTS AND FILE ALSO EXISTS
@@ -141,6 +141,63 @@ class ClientReadServiceServicer(object):
 					content = f.read(); 
 				clientReadResponse = Server_pb2.ClientReadResponse(status = "SUCCESS", name= file.filename, content = content, timestamp = file.timestamp);
 				return clientReadResponse;
+
+
+
+
+
+# SERVICE FOR DELETING FILE FROM SERVER
+class ClientDeleteServiceServicer(object):
+	def ClientDelete(self, request, context):
+		global FileList;
+		global server_dir;
+
+		print("RECIEVED DELETE REQUEST FROM CLIENT OF FILE UUID:", request.uuid);
+
+		# Condition checks
+
+		file_with_uuid = None;
+
+		for files in FileList.files:
+			if (files.uuid == request.uuid):
+				file_with_uuid = files;
+				break;
+
+		if file_with_uuid == None :
+			# UUID DOES NOT EXIST 
+			# If UUID Does not Exist, Creating empty entry in the in-memory map: (uuid,
+			#("", current timestamp)).
+
+			new_file = FileList.files.add();
+			new_file.uuid = request.uuid;
+			new_file.filename = "";
+
+			curr_now = datetime.now();
+			new_file.timestamp = curr_now.strftime("%d/%m/%Y %H:%M:%S");
+
+			clientDeleteResponse = Server_pb2.ClientDeleteResponse(status = "SUCCESS");
+			return clientDeleteResponse;
+		else:
+			# UUID EXISTS
+			file_path = server_dir + "\\" + file_with_uuid.filename+".txt";
+
+			if not os.path.exists(file_path):
+				# UUID EXISTS BUT File does not exist
+				clientDeleteResponse = Server_pb2.ClientDeleteResponse(status = "FILE ALREADY DELETED");
+				return clientDeleteResponse;
+			else:
+				# UUID EXISTS AND FILE ALSO EXISTS
+
+				# Deleting from local storage -
+				os.remove(file_path);
+				# Deleting from in-memory and updating timestamp-
+				file_with_uuid.filename = "";
+				curr_now = datetime.now();
+				file_with_uuid.timestamp = curr_now.strftime("%d/%m/%Y %H:%M:%S");
+
+
+				clientDeleteResponse = Server_pb2.ClientDeleteResponse(status = "SUCCESS");
+				return clientDeleteResponse;
 
 
 
@@ -193,7 +250,7 @@ Server_pb2_grpc.add_ClientWriteServiceServicer_to_server(ClientWriteServiceServi
 # Adding Read Services -
 Server_pb2_grpc.add_ClientReadServiceServicer_to_server(ClientReadServiceServicer(), server);
 # Adding Delete Services -
-#Server_pb2_grpc.add_ClientDeleteServiceServicer_to_server(ClientDeleteServiceServicer(), server);
+Server_pb2_grpc.add_ClientDeleteServiceServicer_to_server(ClientDeleteServiceServicer(), server);
 
 # adding insecure port - 
 server.add_insecure_port(server_address);
