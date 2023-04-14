@@ -1,0 +1,62 @@
+
+syntax = "proto3";
+
+package Server;
+
+
+message File {
+	string uuid = 1;
+	string filename = 2;
+	string timestamp = 3;
+}
+message FileList {
+	repeated File files = 1;
+}
+
+
+
+message ClientWriteRequest {
+	string name = 1;
+	string content = 2;
+	string uuid = 3;
+}
+message ClientWriteResponse {
+	string status = 1;
+	string uuid = 2;
+	string timestamp = 3;
+}
+
+
+
+message ClientReadRequest {
+	string uuid = 1;
+}
+message ClientReadResponse {
+	string status = 1;
+	string name = 2;
+	string content = 3;
+	string timestamp = 4;
+}
+
+
+
+message ClientDeleteRequest {
+	string uuid = 1;
+}
+message ClientDeleteResponse {
+	string status = 1;
+}
+
+
+
+service ClientWriteService {
+	rpc ClientWrite (ClientWriteRequest) returns (ClientWriteResponse);
+}
+
+service ClientReadService {
+	rpc ClientRead (ClientReadRequest) returns (ClientReadResponse);
+}
+
+service ClientDeleteService {
+	rpc ClientDelete (ClientDeleteRequest) returns (ClientDeleteResponse);
+}
