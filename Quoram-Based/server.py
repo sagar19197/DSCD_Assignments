@@ -109,6 +109,44 @@ class ClientWriteServiceServicer(object):
 
 
 
+# SERVICE FOR READING FILES FROM REPLICA
+class ClientReadServiceServicer(object):
+	def ClientRead(self, request, context):
+		global FileList;
+		global server_dir;
+
+		print("RECIEVED READ REQUEST FROM CLIENT FOR FILE UUID:",request.uuid);
+		# Conditions checking
+		file = None;
+		for files in FileList.files:
+			if files.uuid == request.uuid:
+				file = files;
+				break;
+
+		if file == None:
+			# UUID Does not exist
+			clientReadResponse = Server_pb2.ClientReadResponse(status = "FILE DOES NOT EXIST", name= None, content = None, timestamp = None);
+			return clientReadResponse;
+		else :
+			# UUID EXISTS
+			file_path = server_dir + "\\" + file.filename+".txt";
+			if not os.path.exists(file_path):
+				# UUID EXISTS BUT File does not exist
+				clientReadResponse = Server_pb2.ClientReadResponse(status = "FILE ALREADY DELETED", name= None, content = None, timestamp = None);
+				return clientReadResponse;
+			else:
+				# UUID EXISTS AND FILE ALSO EXISTS
+				content = "";
+				with open(file_path, "r") as f:
+					content = f.read(); 
+				clientReadResponse = Server_pb2.ClientReadResponse(status = "SUCCESS", name= file.filename, content = content, timestamp = file.timestamp);
+				return clientReadResponse;
+
+
+
+
+
+
 # Creating Variable for FileList for storing Filename, uuid and Timestamp
 FileList = Server_pb2.FileList();
 
@@ -153,7 +191,7 @@ server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
 # Adding Write Services - 
 Server_pb2_grpc.add_ClientWriteServiceServicer_to_server(ClientWriteServiceServicer(), server);
 # Adding Read Services -
-#Server_pb2_grpc.add_ClientReadServiceServicer_to_server(ClientReadServiceServicer(), server);
+Server_pb2_grpc.add_ClientReadServiceServicer_to_server(ClientReadServiceServicer(), server);
 # Adding Delete Services -
 #Server_pb2_grpc.add_ClientDeleteServiceServicer_to_server(ClientDeleteServiceServicer(), server);
 

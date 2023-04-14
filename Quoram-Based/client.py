@@ -11,6 +11,9 @@ import RegistryServer_pb2_grpc;
 import Server_pb2;
 import Server_pb2_grpc;
 
+# For using DATETIME
+from datetime import datetime 
+
 import uuid;
 
 #----------------------------------------------------
@@ -68,6 +71,7 @@ def getServerList_operation(requestType):
 
 
 
+
 def Write(filename, content, file_uuid):
 	print("\nPROCESSING YOUR REQUEST \n");
 
@@ -87,6 +91,47 @@ def Write(filename, content, file_uuid):
 			print("VERSION : ", clientWriteResponse.timestamp);
 		else:
 			print("STATUS : ", clientWriteResponse.status);
+
+
+
+
+
+def Read(file_uuid):
+	print("\n PROCESSING YOUR REQUEST \n");
+
+	# Contacting Registry Servers for Fetching list of N_r Servers
+	new_serverList = getServerList_operation("read");
+
+	latest_response = None;
+	for server in new_serverList:
+		# Generating channel
+		channel = grpc.insecure_channel(server.address);
+		server_stub = Server_pb2_grpc.ClientReadServiceStub(channel);
+		clientReadRequest = Server_pb2.ClientReadRequest(uuid = file_uuid);
+		clientReadResponse = server_stub.ClientRead(clientReadRequest);
+
+		# Comparing TimeStamps and printing latest values
+		if(clientReadResponse.status == "SUCCESS"):
+			if(latest_response == None):
+				latest_response = clientReadResponse;
+			else:
+				latest_timestamp = datetime.strptime(str(latest_response.timestamp), "%d/%m/%Y %H:%M:%S");
+				curr_timestamp = datetime.strptime(str(clientReadResponse.timestamp), "%d/%m/%Y %H:%M:%S");
+
+				# If curr_timestamp is later than latest timestamp
+				if (curr_timestamp > latest_timestamp):
+					latest_response = clientReadResponse;
+
+
+	# Printing the latest response - 
+	if latest_response == None:
+		print("\nSTATUS : Can Not get Required Information from the above replicas.");
+	else:
+		print("\nSTATUS : ",latest_response.status);
+		print("NAME : ", latest_response.name);
+		print("CONTENT :", latest_response.content);
+		print("VERSION : ", latest_response.timestamp);
+
 
 
 
@@ -124,7 +169,7 @@ while(True):
 	elif option == "3" :
 
 		file_uuid = input("Enter UUID : ");
-		#Read(file_uuid);
+		Read(file_uuid);
 
 
 	elif option == "4" :
