@@ -6,13 +6,24 @@ import time
 
 print("\nWELCOME TO QUORAM-BASED PROTOCOL :\n");
 
+print("PLEASE SELECT MODE:");
+print("1. NORMAL MODE: This mode contains testcases as per the documents.");
+print("2. CUSTOM MODE: In this mode Client will have to enter Inputs. ")
+
+
+mode = int(input("\n Enter MODE option number: "));
+
+if mode != 1 and mode !=2:
+	print("PLEASE ENTER VALID INPUT !! ABORTING");
+	exit();
+
 
 # Taking Input for NR, NW and N
 N = 0;
 N_r = 0;
 N_w = 0;
 while(True):
-	N = int(input("Enter Total Servers (N) : "));
+	N = int(input("\nEnter Total Servers (N) : "));
 	N_r = int(input("Enter Number of Read Quorams (N_r) : "));
 	N_w = int(input("Enter Number of Write Quorams (N_w) : "));
 	# Checking Conditions - 
@@ -47,7 +58,10 @@ M = int(input("\nEnter Number of Clients to generate : "));
 
 commands = [];
 for i in range(M):
-	commands.append('python client.py');
+	if mode == 1:
+		commands.append('python client.py NORMAL');
+	else:
+		commands.append('python client.py');
 	time.sleep(0.1);
 
 # Open a new command prompt window for each Client

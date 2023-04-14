@@ -16,6 +16,8 @@ from datetime import datetime
 
 import uuid;
 
+import sys;
+
 #----------------------------------------------------
 # REGISTRY SERVER ADDRESS - 
 REGISTRY_SERVER_ADDRESS = "localhost:8000";
@@ -95,6 +97,23 @@ def Write(filename, content, file_uuid):
 
 
 
+def Read_from_allServers(file_uuid):
+	print("\n PROCESSING YOUR REQUEST \n");
+	global serverList;
+	for server in serverList:
+		# Generating channel
+		channel = grpc.insecure_channel(server.address);
+		server_stub = Server_pb2_grpc.ClientReadServiceStub(channel);
+		clientReadRequest = Server_pb2.ClientReadRequest(uuid = file_uuid);
+		clientReadResponse = server_stub.ClientRead(clientReadRequest);
+		print("\nResponse from:",server.address);
+		print("\nSTATUS : ",clientReadResponse.status);
+		print("NAME : ", clientReadResponse.name);
+		print("CONTENT :", clientReadResponse.content);
+		print("VERSION : ", clientReadResponse.timestamp);
+
+
+
 
 def Read(file_uuid):
 	print("\n PROCESSING YOUR REQUEST \n");
@@ -156,52 +175,144 @@ def Delete(file_uuid):
 
 #-----------------------------------------------------------
 
+# NORMAL MODE
+def NormalMode():
+	print("-----------------------------------");
+	global serverList;
 
-while(True):
-	print("-----------------------------------------");
-	print("Please Enter Number of one of the following options:");
-	print("1. GetServerList");
-	print("2. Write a File");
-	print("3. Read a File");
-	print("4. Delete a File");
-	print("5. Generate UUID ");
-	print("6. EXIT")
+	# Performing Write Operation
+	print("\n-----Performing WRITE operation-----\n");
+	filename = "HelloWorld";
+	content = "HELLO WORLD FROM PYTHON. Welcome";
+	file_uuid = generateUID();
+	Write(filename, content, file_uuid);
 
-	option = input("\n Enter Option Number : ");
-	print("----------------------------------------\n")
+	print("\n-----Reading from all servers-----\n");
+	# Reading from all servers one by one
+	Read_from_allServers(file_uuid);
 
-	# Case handling - 
-	if option == "1":
+	print("\n-----Reading from N_r servers-----\n");
+	# Reading from N_r Servers
+	Read(file_uuid);
 
-		getServerList();
+	# AGAIN PEFORMING WRITE OPERATION
+	print("\n-----Performing WRITE operation-----\n");
+	filename2 = "HelloWorld2";
+	content2 = "THIS IS SECOND FILE. HELLO WORLD.";
+	file_uuid2 = generateUID();
+	Write(filename2, content2, file_uuid2);
 
-	elif option == "2" :
+	print("\n-----Reading from all servers-----\n");
+	# Reading from all servers one by one
+	Read_from_allServers(file_uuid2);
 
-		filename = input("Enter File Name : ");
-		content = input("Enter Content : ");
-		file_uuid = input("Enter UUID : ");
-		Write(filename, content, file_uuid);
-
-
-	elif option == "3" :
-
-		file_uuid = input("Enter UUID : ");
-		Read(file_uuid);
-
-
-	elif option == "4" :
-		
-		file_uuid = input("Enter UUID : ");
-		Delete(file_uuid);
+	print("\n-----Reading from N_r servers-----\n");
+	# Reading from N_r Servers
+	Read(file_uuid2);
 
 
-	elif option == "5" :
+	print("\n-----Deleting Last created File-----\n");
+	# Deleting recently created file
+	Delete(file_uuid2);
 
-		print("UUID : ",generateUID());
+	print("\n-----Reading DELETED file all servers-----\n");
+	# Reading DELETED FILE from all servers one by one
+	Read_from_allServers(file_uuid2);
 
-	elif option == "6":
+	print("\n-----Reading from N_r servers-----\n");
+	# Reading from N_r Servers
+	Read(file_uuid2);
 
-		break;
+	print("\n-----DELETING DELETED FILE-----\n");
+	# Deleting DELETED FILE from all servers one by one
+	Delete(file_uuid2);
 
-	else:
-		print("Invalid Input!! Please Enter again.");
+	print("\n-----Overwritng Existing FILE-----\n");
+	Write(filename, content2, file_uuid);
+
+	print("\n-----Reading from all servers-----\n");
+	# Reading  from all servers one by one
+	Read_from_allServers(file_uuid);
+
+	print("\n-----Reading from N_r servers-----\n");
+	# Reading from N_r Servers
+	Read(file_uuid);
+
+	print("\n-----Reading of UNKNOWN UUID-----\n");
+	# Reading from all servers one by one
+	new_uuid = generateUID();
+	Read_from_allServers(new_uuid);
+
+	print("\n-----Reading from N_r servers-----\n");
+	# Reading from N_r Servers
+	Read(new_uuid);
+
+
+
+
+# CUSTOM MODE -
+def CustomMode():
+
+	while(True):
+		print("-----------------------------------------");
+		print("Please Enter Number of one of the following options:");
+		print("1. GetServerList");
+		print("2. Write a File");
+		print("3. Read a File");
+		print("4. Delete a File");
+		print("5. Generate UUID ");
+		print("6. EXIT")
+
+		option = input("\n Enter Option Number : ");
+		print("----------------------------------------\n")
+
+		# Case handling - 
+		if option == "1":
+
+			getServerList();
+
+		elif option == "2" :
+
+			filename = input("Enter File Name : ");
+			content = input("Enter Content : ");
+			file_uuid = input("Enter UUID : ");
+			Write(filename, content, file_uuid);
+
+
+		elif option == "3" :
+
+			file_uuid = input("Enter UUID : ");
+			Read(file_uuid);
+
+
+		elif option == "4" :
+			
+			file_uuid = input("Enter UUID : ");
+			Delete(file_uuid);
+
+
+		elif option == "5" :
+
+			print("UUID : ",generateUID());
+
+		elif option == "6":
+
+			break;
+
+		else:
+			print("Invalid Input!! Please Enter again.");
+
+
+
+
+mode = "CUSTOM";
+
+if len(sys.argv) == 2:
+	mode = sys.argv[1];
+
+
+if mode == "CUSTOM":
+	CustomMode();
+else:
+	NormalMode();
+
