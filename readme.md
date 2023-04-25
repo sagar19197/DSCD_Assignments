@@ -1,4 +1,4 @@
-#DSCD Assignments and Projects
+# DSCD Assignments and Projects
 
 This Repository Contains code for DSCD Assignments and Project done in DSCD Course 2023. 
 
