@@ -1,0 +1,22 @@
+
+syntax = "proto3";
+
+package Master;
+
+
+
+message FileLocations {
+	repeated string fileLocation = 1;
+}
+
+
+
+
+service MapWorkerService {
+	rpc MapWorker (FileLocations) returns (FileLocations);
+}
+
+
+service ReduceWorkerService {
+	rpc ReduceWorker (FileLocations) returns (FileLocations);
+}
