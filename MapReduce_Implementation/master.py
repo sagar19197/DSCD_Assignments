@@ -199,8 +199,26 @@ print("\n--------------------------------------------------------------\n");
 
 print("\n REDUCE WORKERS INVOCATION STARTS -\n");
 
+current_reducer = 0;
 # Iterating over all REDUCERS - 
 for reduceWorkers in reduceWorker_addressList:
+
+	# Creating Variable for storing FileLocations-
+	FileLocations = Master_pb2.FileLocations();
+	new_location = FileLocations.fileLocation;
+
+	print("\nSending Following Intermediate File Locations to Reduce WORKER -", reduceWorkers,"\n");
+
+	IF_file_index = 0;
+	# Iterating IF_LOCATIONS
+	for file in IF_locations:
+		# If Current Reducer -
+		if (IF_file_index%number_of_reducers == current_reducer):
+			print(file);
+			new_location.append(file);
+
+		IF_file_index +=1;
+
 
 	# Sending to ReduceWorkers - 
 
@@ -209,12 +227,13 @@ for reduceWorkers in reduceWorker_addressList:
 	# Creating Stub-
 	reduceWorker_stub = Master_pb2_grpc.ReduceWorkerServiceStub(reduceWorker_channel);
 	# Calling RPC -
-	reduceWorker_response = reduceWorker_stub.ReduceWorker(IntermediateFile_Locations);
+	reduceWorker_response = reduceWorker_stub.ReduceWorker(FileLocations);
 
 	print("\nRecieved Following File Locations Response: from REDUCE-WORKER - ", reduceWorkers,"\n");
 	for file in reduceWorker_response.fileLocation:
 		print(file);
 
+	current_reducer += 1;
 
 
 

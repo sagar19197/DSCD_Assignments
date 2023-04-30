@@ -24,7 +24,7 @@ MASTER_SERVER_ADDRESS = "localhost:8000";
 class ReduceWorkerServiceServicer(Master_pb2_grpc.ReduceWorkerServiceServicer):
 	def ReduceWorker(self, request, context):
 
-		print("Request from MASTER: Recieved Following File Locations:\n");
+		print("Request from MASTER: Recieved Following Intermediate File Locations:\n");
 
 		FileLocations = Master_pb2.FileLocations();
 		new_location = FileLocations.fileLocation;
