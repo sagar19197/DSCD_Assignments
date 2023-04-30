@@ -88,7 +88,7 @@ for i in range(number_of_mappers):
 	mapWorker_addressList.append(address);
 
 	# creating spawning commands - 
-	spawning_commands.append('python mapWorker.py '+ address+' '+type_of_operation);
+	spawning_commands.append('python mapWorker.py '+ address+' '+type_of_operation+' '+str(number_of_reducers));
 
 # Spawning
 for run_mapWorkers in spawning_commands:
