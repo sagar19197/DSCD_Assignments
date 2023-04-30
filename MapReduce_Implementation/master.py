@@ -11,6 +11,8 @@ import subprocess;
 
 # importing grpc
 import grpc;
+# For managing directory - 
+import os;
 
 
 
@@ -18,15 +20,47 @@ import grpc;
 MASTER_SERVER_ADDRESS = "localhost:8000";
 
 print("\n--------------------------------------------------------------");
+print("		WELCOME TO MAP REDUCE FRAMEWORK !!")
+print("--------------------------------------------------------------");
+
 print("\n WELCOME MASTER SERVER !! Your address:", MASTER_SERVER_ADDRESS);
 
-# Taking Input - 
-print("\n Please Provide Following Information - \n");
+while(True):
+	print("\n Choose one of the following Applications/Queries:")
+	print("\n  1. WORD COUNT ");
+	print("  2. INVERTED INDEX");
+	print("  3. NATURAL JOIN ");
+	type_of_operation = input("\n Enter Option Number (1-3) from above : ");
 
-input_data_location = input("\n ENTER INPUT DATA LOCATION : ");
-number_of_mappers = int(input("\n ENTER M (Number of Mappers) : "));
-number_of_reducers = int(input("\n ENTER R (Number of Reducers) : "));
-output_data_location = input("\n ENTER OUTPUT DATA LOCATION : ");
+	if type_of_operation == "1":
+		print("\n You have chosen WORD COUNT.");
+		break;
+	elif type_of_operation == "2":
+		print("\n You have chosen INVERTED INDEX.");
+		break;
+	elif type_of_operation == "3":
+		print("\n You have chosen NATURAL JOIN.");
+		break;
+	else:
+		print("\n PLEASE PROVIDE VALID INPUT!!");
+
+print("--------------------------------------------------------------");
+
+number_of_mappers = int(input("\n  Enter M (Number of Mappers) : "));
+number_of_reducers = int(input("\n  Enter R (Number of Reducers) : "));
+input_data_location = input("\n  Enter INPUT Data Location : ");
+
+# Checking Condition for valid directory -
+if not os.path.isdir(input_data_location):
+	print("ERROR : Please Provide Valid Directory. ABORTING !!");
+	exit();
+
+output_data_location = input("\n  Enter OUTPUT Data Location : ");
+
+# Checking Condition for valid directory -
+if not os.path.isdir(output_data_location):
+	print("ERROR : Please Provide Valid Directory. ABORTING !!");
+	exit();
 
 print("\n--------------------------------------------------------------\n");
 
