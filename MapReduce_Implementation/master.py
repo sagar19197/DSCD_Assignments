@@ -207,6 +207,8 @@ for reduceWorkers in reduceWorker_addressList:
 	FileLocations = Master_pb2.FileLocations();
 	new_location = FileLocations.fileLocation;
 
+	new_location.append(output_data_location);
+
 	print("\nSending Following Intermediate File Locations to Reduce WORKER -", reduceWorkers,"\n");
 
 	IF_file_index = 0;
