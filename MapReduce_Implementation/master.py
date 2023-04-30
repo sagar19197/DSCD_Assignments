@@ -74,6 +74,7 @@ print("\n--------------------------------------------------------------\n");
 # STEP 0 : SPAWNING MAPPERS AND REDUCERS - 
 
 mapWorker_addressList = [];
+reduceWorker_addressList = [];
 spawning_commands = [];
 # Get the path of the cmd.exe executable
 cmd_path = subprocess.check_output('where cmd.exe').decode().split()[0]
@@ -90,11 +91,25 @@ for i in range(number_of_mappers):
 	# creating spawning commands - 
 	spawning_commands.append('python mapWorker.py '+ address+' '+type_of_operation+' '+str(number_of_reducers));
 
+
+# Spawning Reduce Workers -
+for i in range(number_of_reducers):
+	# MapWorkers start from 6000 ports
+	port = 6000 + i;
+	address = "localhost:" + str(port);
+
+	# Adding this Address to mapWorker_addressList
+	reduceWorker_addressList.append(address);
+
+	# creating spawning commands - 
+	spawning_commands.append('python reduceWorker.py '+ address+' '+type_of_operation);
+
+
 # Spawning
 for run_mapWorkers in spawning_commands:
 	subprocess.Popen([cmd_path, '/c', 'start', 'cmd', '/k', run_mapWorkers]);
 
-
+#--------------------------------------------------------------------
 
 
 
@@ -111,6 +126,7 @@ for input_file_name in input_file_names:
 		# Storing their Paths 
 		input_file_paths.append(os.path.join(input_data_location, input_file_name));
 
+#---------------------------------------------------------------------
 
 
 

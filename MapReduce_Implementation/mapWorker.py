@@ -20,6 +20,7 @@ import os;
 MASTER_SERVER_ADDRESS = "localhost:8000";
 
 
+# Service for MAPWORKER
 class MapWorkerServiceServicer(Master_pb2_grpc.MapWorkerServiceServicer):
 	def MapWorker(self, request, context):
 
@@ -49,7 +50,7 @@ class MapWorkerServiceServicer(Master_pb2_grpc.MapWorkerServiceServicer):
 		# Sending it to MASTER - 
 		FileLocations = Master_pb2.FileLocations();
 		new_location = FileLocations.fileLocation;
-		
+
 		for file in list_of_partition:
 			print(file);
 			new_location.append(file);
@@ -184,7 +185,7 @@ server_dir = os.path.join(os.getcwd(), "Files");
 if not os.path.exists(server_dir):
 	os.mkdir(server_dir);
 
-server_dir = os.path.join(server_dir, mapWorker_address[10:]);
+server_dir = os.path.join(server_dir, "MAP_WORKER_"+mapWorker_address[10:]);
 # If Server Directory not exists
 if not os.path.exists(server_dir):
 	os.mkdir(server_dir);
