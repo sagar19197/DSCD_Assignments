@@ -134,6 +134,11 @@ for input_file_name in input_file_names:
 #---------------------------------------------------------------------
 # STEP 2 : Sending List of Input Locations to assigned to particular Mappers
 
+# For storing all IF info
+IntermediateFile_Locations = Master_pb2.FileLocations();
+IF_locations = IntermediateFile_Locations.fileLocation;
+
+
 # Integer Divsion
 number_of_files_for_each_atleast = len(input_file_paths) // number_of_mappers;
 # Modulus Divsion
@@ -176,10 +181,39 @@ for mapWorkers in mapWorker_addressList:
 	# Calling RPC -
 	mapWorker_response = mapWorker_stub.MapWorker(FileLocations);
 
-	print("\nRecieved Following File Locations Response: from MAPWORKER - ", mapWorkers,"\n");
+	print("\nRecieved Following File Locations Response: from MAP-WORKER - ", mapWorkers,"\n");
 	for file in mapWorker_response.fileLocation:
 		print(file);
+		# Storing in IF Locations - 
+		IF_locations.append(file);
 
+#---------------------------------------------------------------------
+print("\n--------------------------------------------------------------\n");
+
+
+
+
+#---------------------------------------------------------------------
+# STEP 3: Sending The Desired Partitions to REDUCE Workers
+
+
+print("\n REDUCE WORKERS INVOCATION STARTS -\n");
+
+# Iterating over all REDUCERS - 
+for reduceWorkers in reduceWorker_addressList:
+
+	# Sending to ReduceWorkers - 
+
+	# Creating Insecure Channel
+	reduceWorker_channel = channel = grpc.insecure_channel(reduceWorkers);
+	# Creating Stub-
+	reduceWorker_stub = Master_pb2_grpc.ReduceWorkerServiceStub(reduceWorker_channel);
+	# Calling RPC -
+	reduceWorker_response = reduceWorker_stub.ReduceWorker(IntermediateFile_Locations);
+
+	print("\nRecieved Following File Locations Response: from REDUCE-WORKER - ", reduceWorkers,"\n");
+	for file in reduceWorker_response.fileLocation:
+		print(file);
 
 
 

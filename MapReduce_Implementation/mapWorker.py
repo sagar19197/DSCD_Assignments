@@ -185,7 +185,7 @@ server_dir = os.path.join(os.getcwd(), "Files");
 if not os.path.exists(server_dir):
 	os.mkdir(server_dir);
 
-server_dir = os.path.join(server_dir, "MAP_WORKER_"+mapWorker_address[10:]);
+server_dir = os.path.join(server_dir, "map_Worker_"+mapWorker_address[10:]);
 # If Server Directory not exists
 if not os.path.exists(server_dir):
 	os.mkdir(server_dir);

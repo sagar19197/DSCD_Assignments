@@ -53,7 +53,7 @@ server_dir = os.path.join(os.getcwd(), "Files");
 if not os.path.exists(server_dir):
 	os.mkdir(server_dir);
 
-server_dir = os.path.join(server_dir, "REDUCE_WORKER_"+ reduceWorker_address[10:]);
+server_dir = os.path.join(server_dir, "reduce_Worker_"+ reduceWorker_address[10:]);
 # If Server Directory not exists
 if not os.path.exists(server_dir):
 	os.mkdir(server_dir);
