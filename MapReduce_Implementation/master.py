@@ -15,6 +15,8 @@ import grpc;
 import os;
 
 
+#---------------------------------------------------------------------
+# SETTING UP
 
 # MASTER ADDRESS -
 MASTER_SERVER_ADDRESS = "localhost:8000";
@@ -48,14 +50,14 @@ print("--------------------------------------------------------------");
 
 number_of_mappers = int(input("\n  Enter M (Number of Mappers) : "));
 number_of_reducers = int(input("\n  Enter R (Number of Reducers) : "));
-input_data_location = input("\n  Enter INPUT Data Location : ");
+input_data_location = input("\n  Enter INPUT Data Location (Directory) : ");
 
 # Checking Condition for valid directory -
 if not os.path.isdir(input_data_location):
 	print("ERROR : Please Provide Valid Directory. ABORTING !!");
 	exit();
 
-output_data_location = input("\n  Enter OUTPUT Data Location : ");
+output_data_location = input("\n  Enter OUTPUT Data Location (Directory): ");
 
 # Checking Condition for valid directory -
 if not os.path.isdir(output_data_location):
@@ -67,6 +69,8 @@ print("\n--------------------------------------------------------------\n");
 
 
 
+
+#---------------------------------------------------------------------
 # STEP 0 : SPAWNING MAPPERS AND REDUCERS - 
 
 mapWorker_addressList = [];
@@ -84,7 +88,7 @@ for i in range(number_of_mappers):
 	mapWorker_addressList.append(address);
 
 	# creating spawning commands - 
-	spawning_commands.append('python mapWorker.py '+ address);
+	spawning_commands.append('python mapWorker.py '+ address+' '+type_of_operation);
 
 # Spawning
 for run_mapWorkers in spawning_commands:
@@ -92,30 +96,77 @@ for run_mapWorkers in spawning_commands:
 
 
 
-# DEMO COMMUNICATION - 
 
-FileLocations = Master_pb2.FileLocations();
-new_location = FileLocations.fileLocation;
-new_location.append(output_data_location);
 
+#---------------------------------------------------------------------
+# STEP 1 : Spliting the Data from Input Location
+
+input_file_paths = [];
+
+input_file_names = os.listdir(input_data_location);
+
+for input_file_name in input_file_names:
+	# Considering only input files - 
+	if input_file_name.endswith('.txt'):
+		# Storing their Paths 
+		input_file_paths.append(os.path.join(input_data_location, input_file_name));
+
+
+
+
+
+#---------------------------------------------------------------------
+# STEP 2 : Sending List of Input Locations to assigned to particular Mappers
+
+# Integer Divsion
+number_of_files_for_each_atleast = len(input_file_paths) // number_of_mappers;
+# Modulus Divsion
+number_of_files_left = len(input_file_paths) % number_of_mappers;
+
+print("\n MAP WORKERS INVOCATION STARTS -\n");
+input_file_index = 0;
+# ITERATING OVER ALL MAPPERS -
 for mapWorkers in mapWorker_addressList:
+
+	if (number_of_files_for_each_atleast == 0 and number_of_files_left == 0):
+		# No files 
+		break;
+
+	print("\nSending Following Input File Locations to MAPWORKER -", mapWorkers,"\n");
+	# Creating Variable for storing FileLocations-
+	FileLocations = Master_pb2.FileLocations();
+	new_location = FileLocations.fileLocation;
+
+	# Iterating over alteast files -
+	for i in range(number_of_files_for_each_atleast):
+		print(input_file_paths[input_file_index]);
+		new_location.append(input_file_paths[input_file_index]);
+		input_file_index += 1;
+
+	# Iterating Over extra files
+	if (number_of_files_left != 0):
+		print(input_file_paths[input_file_index]);
+		new_location.append(input_file_paths[input_file_index]);
+		input_file_index += 1;
+		number_of_files_left -= 1;
+
+
+	# Sending to MapWorkers - 
+
 	# Creating Insecure Channel
 	mapWorker_channel = channel = grpc.insecure_channel(mapWorkers);
 	# Creating Stub-
 	mapWorker_stub = Master_pb2_grpc.MapWorkerServiceStub(mapWorker_channel);
-
 	# Calling RPC -
 	mapWorker_response = mapWorker_stub.MapWorker(FileLocations);
 
-	print("Recieved Response:");
+	print("\nRecieved Following File Locations Response: from MAPWORKER - ", mapWorkers,"\n");
 	for file in mapWorker_response.fileLocation:
 		print(file);
 
 
 
 
-
-# STEP 1 : Spliting the Data from Input Location
 
 
 

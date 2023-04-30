@@ -12,6 +12,8 @@ import Master_pb2_grpc;
 
 # For taking input from commandline -
 import sys;
+# FOR handling FIles -
+import os;
 
 
 # MASTER ADDRESS - 
@@ -38,12 +40,28 @@ class MapWorkerServiceServicer(Master_pb2_grpc.MapWorkerServiceServicer):
 
 
 # Checking Condition for Usage of this file - 
-if len(sys.argv) != 2:
-	print("Usage ERROR: Please ENTER address of the server as argument. Usage: python mapWorker.py [address]");
+if len(sys.argv) != 3:
+	print("Usage ERROR: Please ENTER address of the server as argument. Usage: python mapWorker.py [address] [OPERATION]");
 	exit();
 
 
 mapWorker_address = sys.argv[1];
+mapWorker_operation = sys.argv[2];
+
+
+# Creating directories for storing files 
+server_dir = os.path.join(os.getcwd(), "Files");
+
+# If Files Directory not exists
+if not os.path.exists(server_dir):
+	os.mkdir(server_dir);
+
+server_dir = os.path.join(server_dir, mapWorker_address[10:]);
+# If Server Directory not exists
+if not os.path.exists(server_dir):
+	os.mkdir(server_dir);
+
+
 
 print("\n WELCOME MapWorker SERVER, Your address:", mapWorker_address);
 
